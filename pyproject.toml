@@ -1,0 +1,94 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fulcrum-trust"
+version = "0.1.0"
+description = "Trust-based circuit breaking for multi-agent AI systems"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [
+    { name = "Fulcrum", email = "hello@fulcrumlayer.io" },
+]
+keywords = ["agents", "trust", "circuit-breaker", "langgraph", "multi-agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.optional-dependencies]
+numpy = ["numpy>=1.21"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.0",
+    "ruff>=0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/Fulcrum-Governance/fulcrum-trust"
+Repository = "https://github.com/Fulcrum-Governance/fulcrum-trust"
+Issues = "https://github.com/Fulcrum-Governance/fulcrum-trust/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fulcrum_trust"]
+
+# Pytest: run with coverage enabled; fail below 95%
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=fulcrum_trust",
+    "--cov-report=term-missing",
+    "--cov-fail-under=95",
+]
+testpaths = ["tests"]
+
+# Coverage: exclude adapters (lower 90% threshold) and boilerplate lines
+[tool.coverage.run]
+source = ["fulcrum_trust"]
+omit = ["fulcrum_trust/adapters/*"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@(abc\\.)?abstractmethod",
+]
+
+# Mypy: strict mode targeting Python 3.9
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = "numpy"
+ignore_missing_imports = true
+
+# Ruff: lint + format, targeting Python 3.9
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
