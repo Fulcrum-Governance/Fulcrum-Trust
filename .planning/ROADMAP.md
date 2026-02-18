@@ -26,9 +26,9 @@ Build and ship a pure Python package that provides trust-based circuit breaking 
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Core types, trust evaluator, memory store, decay logic
-- [ ] 01-02: Test suite — evaluator, store, decay, circuit breaking
-- [ ] 01-03: Package scaffolding — pyproject.toml, __init__.py, CI workflow, README skeleton
+- [ ] 01-01-PLAN.md — Core types, evaluator, stores, decay, and TrustManager source modules
+- [ ] 01-02-PLAN.md — Test suite with >=95% coverage (types, evaluator, decay, stores, manager)
+- [ ] 01-03-PLAN.md — Package scaffolding: pyproject.toml, CI workflow, README skeleton
 
 ### Phase 2: LangGraph Adapter
 **Goal**: TrustAwareGraph wraps any LangGraph StateGraph with automatic trust evaluation at node boundaries. Terminates graphs when trust degrades.
@@ -86,7 +86,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Trust Engine | 0/3 | Not started | - |
+| 1. Core Trust Engine | 0/3 | Planned | - |
 | 2. LangGraph Adapter | 0/2 | Not started | - |
 | 3. Demos + Content | 0/2 | Not started | - |
 | 4. Ship + Distribute | 0/4 | Not started | - |
