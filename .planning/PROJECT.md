@@ -1,5 +1,9 @@
 # fulcrum-trust — Trust-Based Circuit Breaking for Multi-Agent AI
 
+## What This Is
+
+A pure Python package implementing trust-based circuit breaking for multi-agent AI systems. Uses Beta(α,β) distribution to mathematically model trust between agent pairs, with exponential time decay and a configurable circuit-breaker threshold (default 0.3). When trust degrades below threshold, the circuit opens and terminates the interaction — preventing runaway coordination failures like the $47K AutoGen gratitude loop incident.
+
 ## Vision
 
 A lightweight Python package that brings formally validated trust mechanics to multi-agent systems. When Agent A asks Agent B to do something and it goes wrong, fulcrum-trust detects the degradation pattern and breaks the circuit before catastrophic cost accumulation — like the $47K AutoGen incident where agents entered a "gratitude loop" with no termination signal.
