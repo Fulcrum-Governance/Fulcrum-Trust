@@ -1,89 +1,86 @@
 # fulcrum-trust
 
-**Trust-based circuit breaking for multi-agent AI systems.**
+Trust-based circuit breaking for multi-agent AI systems.
 
-Prevent infinite loops, coordination drift, and runaway costs in multi-agent workflows using formally validated trust degradation.
+[![CI](https://github.com/Fulcrum-Governance/fulcrum-trust/actions/workflows/ci.yml/badge.svg)](https://github.com/Fulcrum-Governance/fulcrum-trust/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/fulcrum-trust)](https://pypi.org/project/fulcrum-trust/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
-## The Problem
+## What is this?
 
-Multi-agent AI systems fail 41-87% of the time in production. The canonical example: two AutoGen agents entered a gratitude loop that ran for 11 days and cost $47,000 — because neither agent could recognize the interaction had become unproductive.
+`fulcrum-trust` implements a Beta distribution trust model for agent-to-agent relationships. When an agent pair's trust score drops below a configurable threshold, the circuit breaks — terminating the interaction before runaway loops occur.
 
-Loop counters and timeouts are static. They terminate after N iterations regardless of whether the interaction is productive. **fulcrum-trust** is adaptive — it tracks coordination quality and terminates only when trust degrades below a configurable threshold.
+The math: every interaction updates a `Beta(α, β)` distribution. Trust score = `α / (α + β)`. Starting at `(1.0, 1.0)` gives an uninformative prior of 0.5. Scores decay exponentially toward 0.5 over time (stale relationships revert to uncertainty).
 
 ## Quick Start
-
-```bash
-pip install fulcrum-trust
-```
 
 ```python
 from fulcrum_trust import TrustManager, TrustOutcome
 
-tm = TrustManager(threshold=0.3)
+# Default: in-memory store, threshold=0.3, 24-hour decay half-life
+tm = TrustManager()
 
 # Record interaction outcomes
-state = tm.evaluate("agent-a", "agent-b", TrustOutcome.SUCCESS)
-print(f"Trust: {state.trust_score:.3f}")  # 0.667
+tm.evaluate("orchestrator", "code-agent", TrustOutcome.SUCCESS)
+tm.evaluate("orchestrator", "code-agent", TrustOutcome.SUCCESS)
+tm.evaluate("orchestrator", "code-agent", TrustOutcome.FAILURE)
 
-state = tm.evaluate("agent-a", "agent-b", TrustOutcome.FAILURE)
-print(f"Trust: {state.trust_score:.3f}")  # 0.500
+# Check trust
+print(tm.get_trust_score("orchestrator", "code-agent"))  # 0.6
 
-# Check if agents should stop collaborating
-should_stop = tm.should_terminate("agent-a", "agent-b")
+# Circuit break check — use this in your agent loop
+if tm.should_terminate("orchestrator", "code-agent"):
+    raise RuntimeError("Circuit open — trust degraded below threshold")
 ```
 
-### LangGraph Integration
+Persist across sessions with FileStore:
 
 ```python
-from fulcrum_trust import TrustManager
-from fulcrum_trust.adapters.langgraph import TrustAwareGraph
-from langgraph.graph import StateGraph
+from fulcrum_trust import TrustManager, TrustOutcome, TrustConfig
+from fulcrum_trust.stores import FileStore
 
-graph = StateGraph(MyState)
-# ... define your nodes and edges ...
-
-# Wrap with trust-based circuit breaking
-trusted_graph = TrustAwareGraph(graph, trust_manager=TrustManager())
-result = trusted_graph.invoke(initial_state)
-# Automatically terminates if agent coordination degrades
+tm = TrustManager(
+    store=FileStore("trust_state.json"),
+    config=TrustConfig(threshold=0.3, half_life_seconds=3600),  # 1-hour decay
+)
 ```
 
-## How It Works
-
-fulcrum-trust uses a **Beta distribution trust model** with formal termination guarantees:
-
-```
-Trust(t) = (α + 1) / (α + β + 2)
-```
-
-- New agent pairs start at 0.5 (uninformative prior)
-- Successful interactions increase trust
-- Failed/unproductive interactions decrease trust
-- When trust drops below threshold → terminate
-- Optional time decay ensures stale relationships degrade
-
-The termination bound is provably finite — not a heuristic, a mathematical guarantee.
-
-## Examples
+## Install
 
 ```bash
-# See trust-based termination prevent the $47K gratitude loop
-python examples/gratitude_loop.py --with-trust
+pip install fulcrum-trust
 
-# Compare: without trust, the loop runs indefinitely
-python examples/gratitude_loop.py --without-trust --max-iterations=50
+# Optional numpy fast path for decay math:
+pip install "fulcrum-trust[numpy]"
 ```
 
-## Documentation
+## Development
 
-- [API Reference](docs/api-reference.md)
-- [Trust Model Mathematics](docs/trust-model.md)
-- [LangGraph Integration Guide](docs/langgraph-guide.md)
+```bash
+git clone https://github.com/Fulcrum-Governance/fulcrum-trust
+cd fulcrum-trust
+pip install -e ".[dev]"
+pytest              # Run tests (requires >=95% coverage)
+mypy fulcrum_trust/ # Type check (strict mode)
+ruff check .        # Lint
+ruff format .       # Format
+```
 
-## Part of the Fulcrum Ecosystem
+## Architecture
 
-fulcrum-trust is the open-source trust engine from [Fulcrum](https://fulcrumlayer.io) — the Agentic Operating System providing governance and coordination for multi-agent AI. The trust module works standalone with zero dependencies, or connects to the Fulcrum platform for centralized trust management, dashboards, and enterprise governance.
+```
+fulcrum_trust/
+├── types.py        — TrustOutcome enum, TrustState, TrustConfig dataclasses
+├── evaluator.py    — TrustEvaluator: Beta(α,β) scoring, pair_id generation
+├── decay.py        — Exponential decay toward uninformative prior
+├── manager.py      — TrustManager: orchestrates evaluator + store + decay
+└── stores/
+    ├── base.py     — TrustStore Protocol (structural subtyping)
+    ├── memory.py   — MemoryStore (default, in-process)
+    └── file.py     — FileStore (JSON-backed, cross-session)
+```
 
 ## License
 
-Apache 2.0
+Apache 2.0. See [LICENSE](LICENSE).
