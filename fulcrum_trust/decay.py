@@ -5,20 +5,11 @@ import time
 from fulcrum_trust.types import TrustState
 
 
-try:
-    import numpy as _np  # type: ignore[import-untyped]
-    _HAS_NUMPY = True
-except ImportError:
-    _HAS_NUMPY = False
-
-
 def _decay_factor(elapsed: float, half_life: float) -> float:
     """Compute 0.5^(elapsed/half_life). Returns 1.0 if no time has passed."""
     if elapsed <= 0 or math.isinf(half_life):
         return 1.0
-    if _HAS_NUMPY:
-        return float(_np.power(0.5, elapsed / half_life))
-    return 0.5 ** (elapsed / half_life)
+    return float(0.5 ** (elapsed / half_life))
 
 
 def apply_decay(
