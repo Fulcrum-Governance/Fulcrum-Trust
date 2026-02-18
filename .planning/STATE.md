@@ -4,7 +4,7 @@
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
 **Active Phase:** 01-core-trust-engine
-**Current Plan:** 01-01 complete (core trust engine implementation)
+**Current Plan:** 01-02 complete (test suite — all three 01 plans done)
 **Ship Date:** ~March 17, 2026 (PyPI publish + blog post)
 
 ## Progress
@@ -12,7 +12,7 @@
 | Phase | Plan | Name | Status |
 |-------|------|------|--------|
 | 01-core-trust-engine | 01-01 | Core types, evaluator, manager, stores | Complete |
-| 01-core-trust-engine | 01-02 | Test suite | Pending |
+| 01-core-trust-engine | 01-02 | Test suite | Complete |
 | 01-core-trust-engine | 01-03 | Package infrastructure (pyproject.toml, README, CI) | Complete |
 
 ## Decisions Log
@@ -32,6 +32,8 @@
 | 2026-02-18 | Decay target is prior (1.0), not 0.0 | Trust decays toward uncertainty, not distrust |
 | 2026-02-18 | dataclasses.replace() for read-only decay copies | Prevents stored state mutation in get_trust_score/should_terminate |
 | 2026-02-18 | Removed numpy optional branch from decay.py | Pure Python float(0.5**x) is equivalent and mypy-strict-clean |
+| 2026-02-18 | Direct last_updated manipulation in decay integration test | Simulates 100 half-lives without sleeping — fast and deterministic |
+| 2026-02-18 | pytest.approx(x, abs=0.05) for decay math tests | Tolerates floating-point accumulation over many simulated half-lives |
 
 ## Blockers
 
@@ -43,6 +45,7 @@ None active.
 |-------|------|----------|-------|-------|
 | 01-core-trust-engine | 01-03 | 2min | 2 | 3 |
 | 01-core-trust-engine | 01-01 | 5min | 2 | 9 |
+| 01-core-trust-engine | 01-02 | 2min | 2 | 6 |
 
 ## Implementation Notes
 
@@ -78,8 +81,9 @@ None active.
 - 01-03 complete: pyproject.toml, README.md (quick-start), .github/workflows/ci.yml
 - 01-01 complete: all 9 source files, mypy strict-clean, all behavioral assertions pass
 - pip install -e ".[dev]" confirmed working; all dev tools (pytest, mypy, ruff) installed
-- Next: execute 01-02 (test suite)
-- Stopped at: Completed 01-01-PLAN.md
+- 01-02 complete: 73-test suite, 96.83% coverage, all TRUST-01..TRUST-06 requirements proven
+- Phase 01 entirely done. All plans (01-01, 01-02, 01-03) complete.
+- Stopped at: Completed 01-02-PLAN.md
 
 ---
 *Last updated: 2026-02-18*
