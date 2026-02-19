@@ -3,8 +3,8 @@
 ## Current Position
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
-**Active Phase:** 01-core-trust-engine
-**Current Plan:** Not started
+**Active Phase:** 02-langgraph-adapter
+**Current Plan:** 02-02
 **Ship Date:** ~March 17, 2026 (PyPI publish + blog post)
 
 ## Progress
@@ -14,6 +14,7 @@
 | 01-core-trust-engine | 01-01 | Core types, evaluator, manager, stores | Complete |
 | 01-core-trust-engine | 01-02 | Test suite | Complete |
 | 01-core-trust-engine | 01-03 | Package infrastructure (pyproject.toml, README, CI) | Complete |
+| 02-langgraph-adapter | 02-01 | TrustAwareGraph adapter implementation | Complete |
 
 ## Decisions Log
 
@@ -34,6 +35,10 @@
 | 2026-02-18 | Removed numpy optional branch from decay.py | Pure Python float(0.5**x) is equivalent and mypy-strict-clean |
 | 2026-02-18 | Direct last_updated manipulation in decay integration test | Simulates 100 half-lives without sleeping — fast and deterministic |
 | 2026-02-18 | pytest.approx(x, abs=0.05) for decay math tests | Tolerates floating-point accumulation over many simulated half-lives |
+| 2026-02-19 | StateNodeSpec._replace() + RunnableCallable for node wrapping | LangGraph 0.4.x spec.runnable is read-only NamedTuple field; _replace() is only safe mutation path |
+| 2026-02-19 | _make_routing_fn at module level (not inside loop) | Avoids ruff B023 loop-closure lint; also cleaner separation |
+| 2026-02-19 | local Any alias pattern for internal LangGraph API access | Concentrates type suppression in one place per method instead of scattered type: ignore |
+| 2026-02-19 | langgraph added to dev extras (not just langgraph extra) | CI installs it without user needing to specify the extra |
 
 ## Blockers
 
@@ -46,6 +51,7 @@ None active.
 | 01-core-trust-engine | 01-03 | 2min | 2 | 3 |
 | 01-core-trust-engine | 01-01 | 5min | 2 | 9 |
 | 01-core-trust-engine | 01-02 | 2min | 2 | 6 |
+| 02-langgraph-adapter | 02-01 | 10min | 2 | 3 |
 
 ## Implementation Notes
 
@@ -83,7 +89,11 @@ None active.
 - pip install -e ".[dev]" confirmed working; all dev tools (pytest, mypy, ruff) installed
 - 01-02 complete: 73-test suite, 96.83% coverage, all TRUST-01..TRUST-06 requirements proven
 - Phase 01 entirely done. All plans (01-01, 01-02, 01-03) complete.
-- Stopped at: Completed 01-02-PLAN.md
+- 02-01 complete: TrustAwareGraph, OutcomeClassifier, CallbackRegistry implemented
+  - LangGraph 0.4.x API compatibility fixes (StateNodeSpec._replace, RunnableCallable)
+  - mypy strict 0 errors, ruff all pass, 73 existing tests still green
+  - Hard termination via conditional edges (LANG-03) confirmed working
+- Stopped at: Completed 02-01-PLAN.md
 
 ---
-*Last updated: 2026-02-18*
+*Last updated: 2026-02-19*
