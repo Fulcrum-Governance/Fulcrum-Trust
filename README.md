@@ -55,6 +55,11 @@ pip install fulcrum-trust
 pip install "fulcrum-trust[numpy]"
 ```
 
+## Documentation
+
+- [API Reference](docs/api-reference.md) — all public classes and methods
+- [Blog post](docs/blog-trust-circuit-breaker.md) — why agents need circuit breakers
+
 ## Development
 
 ```bash

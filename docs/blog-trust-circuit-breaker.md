@@ -2,7 +2,7 @@
 title: "Why Your AI Agents Need a Circuit Breaker (and How to Build One)"
 date: 2026-02-19
 tags: [agents, reliability, python, langchain, langgraph]
-status: draft
+status: published
 ---
 
 # Why Your AI Agents Need a Circuit Breaker (and How to Build One)
