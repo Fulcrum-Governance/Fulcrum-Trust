@@ -75,10 +75,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 04-01: Package polish — mypy strict, docstrings, CHANGELOG.md, CONTRIBUTING.md, API reference
-- [ ] 04-02: CI/CD workflows — ci.yml (lint+test+typecheck on PR), publish.yml (PyPI on tag)
-- [ ] 04-03: PyPI publish — TestPyPI dry run → fix → real publish → GitHub release
-- [ ] 04-04: Community distribution — HN, r/Python, r/LangChain, AI Discord, awesome-langgraph PRs
+- [ ] 04-01-PLAN.md — Package polish: CHANGELOG.md, CONTRIBUTING.md, docs/api-reference.md, blog status published, README link, quality gates
+- [ ] 04-02-PLAN.md — publish.yml CI/CD workflow: build + TestPyPI + PyPI via OIDC Trusted Publishing on v* tag
+- [ ] 04-03-PLAN.md — PyPI publish + GitHub release: OIDC setup checkpoint, tag push, verify install, gh release create
+- [ ] 04-04-PLAN.md — Community distribution: HN Show HN, r/MachineLearning, r/Python, Discord copy ready to post
 
 ## Progress
 
