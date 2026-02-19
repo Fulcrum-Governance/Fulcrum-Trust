@@ -18,6 +18,7 @@
 | 02-langgraph-adapter | 02-02 | LangGraph adapter test suite | Complete |
 | 03-demos-content | 03-01 | Demo scripts (gratitude loop, drift detection, recovery) | Complete |
 | 03-demos-content | 03-02 | Blog post draft (docs/blog-trust-circuit-breaker.md) | Complete |
+| 04-ship-distribute | 04-01 | Polish + docs (CHANGELOG, CONTRIBUTING, api-reference, blog published) | Complete |
 | 04-ship-distribute | 04-02 | PyPI publish workflow (OIDC Trusted Publishing) | Complete |
 
 ## Decisions Log
@@ -53,6 +54,8 @@
 | 2026-02-19 | id-token: write at job level (not workflow level) in publish.yml | Minimum privilege — each publish job gets OIDC token only when needed |
 | 2026-02-19 | TestPyPI-first serialization in publish pipeline | Prevents shipping broken package to real PyPI index |
 | 2026-02-19 | pypa/gh-action-pypi-publish@release/v1 (not @master) | @master branch is sunset per PyPA docs |
+| 2026-02-19 | docs/api-reference.md uses mkdocstrings ::: directives plus inline prose tables | Readable as plain Markdown on GitHub without running mkdocs |
+| 2026-02-19 | ruff auto-fix applied for I001/F541/F401 (21 errors) | Behavior unchanged; only import ordering and f-string cleanup |
 
 ## Blockers
 
@@ -70,6 +73,7 @@ None active.
 | 03-demos-content | 03-01 | 3min | 3 | 3 |
 | 03-demos-content | 03-02 | 3min | 1 | 1 |
 | 04-ship-distribute | 04-02 | 1min | 1 | 1 |
+| 04-ship-distribute | 04-01 | 3min | 3 | 18 |
 
 ## Implementation Notes
 
@@ -134,6 +138,11 @@ None active.
   - Triggers on v* tag push; TestPyPI-first serialization
   - Uses pypa/gh-action-pypi-publish@release/v1 and actions/upload-artifact@v4
 - Stopped at: Completed 04-02-PLAN.md
+- 04-01 complete: CHANGELOG.md, CONTRIBUTING.md, docs/api-reference.md written; blog published
+  - 21 ruff issues auto-fixed (I001 import sort, F541 f-prefix, F401 unused import)
+  - All quality gates green: mypy strict 0 errors, 97 tests at 96.83% coverage, twine PASSED
+  - dist/ contains fulcrum_trust-0.1.0-py3-none-any.whl and fulcrum_trust-0.1.0.tar.gz
+- Stopped at: Completed 04-01-PLAN.md
 
 ---
-*Last updated: 2026-02-19 (04-02 complete: publish.yml OIDC pipeline)*
+*Last updated: 2026-02-19 (04-01 complete: polish + docs; all quality gates green)*
