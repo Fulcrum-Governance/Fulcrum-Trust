@@ -4,7 +4,7 @@
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
 **Active Phase:** 03-demos-content
-**Current Plan:** 03-02 (next)
+**Current Plan:** 03-02 (checkpoint: human-verify Task 2)
 **Ship Date:** ~March 17, 2026 (PyPI publish + blog post)
 
 ## Progress
@@ -17,6 +17,7 @@
 | 02-langgraph-adapter | 02-01 | TrustAwareGraph adapter implementation | Complete |
 | 02-langgraph-adapter | 02-02 | LangGraph adapter test suite | Complete |
 | 03-demos-content | 03-01 | Demo scripts (gratitude loop, drift detection, recovery) | Complete |
+| 03-demos-content | 03-02 | Blog post draft (docs/blog-trust-circuit-breaker.md) | Checkpoint: human-verify |
 
 ## Decisions Log
 
@@ -45,6 +46,9 @@
 | 2026-02-19 | pragma: no cover on except ImportError fallbacks for optional deps | Unreachable when langgraph is installed; no behavioral value in mocking imports away |
 | 2026-02-19 | ainvoke required for async-only LangGraph nodes | .invoke() raises TypeError in 0.4.x: "No synchronous function provided" |
 | 2026-02-18 | DECAY_PER_ITER=0.015 for drift_detection.py | 0.012 broke at iter 106 (>90 limit); 0.015 breaks at iter 85 |
+| 2026-02-19 | Blog post opens with $47K blockquote; math in Section 5 | Story-first structure — numbers after context |
+| 2026-02-19 | beta_val used in blog post (not beta) | Consistent with TrustState.beta_val in types.py |
+| 2026-02-19 | partial_beta_weight=0.8 documented as primary tuning lever | Prevents gratitude-loop plateau at 0.5 |
 
 ## Blockers
 
@@ -60,6 +64,7 @@ None active.
 | 02-langgraph-adapter | 02-01 | 10min | 2 | 3 |
 | 02-langgraph-adapter | 02-02 | 8min | 2 | 3 |
 | 03-demos-content | 03-01 | 3min | 3 | 3 |
+| 03-demos-content | 03-02 | 3min | 1 | 1 |
 
 ## Implementation Notes
 
@@ -111,6 +116,12 @@ None active.
   - recovery: 3-phase arc, trust drops to 0.25, resets to 0.500, rebuilds to 0.941
   - No extra dependencies beyond fulcrum_trust + stdlib
 - Stopped at: Completed 03-01-PLAN.md
+- 03-02 Task 1 complete: docs/blog-trust-circuit-breaker.md written (1831 words, 8 sections, commit 0122c4f)
+  - Opens with $47K blockquote; math in Section 5; all API names verified against types.py
+  - Three demo commands match actual examples/ filenames
+  - Honest limitations section with 4 specific bullets
+  - Ends with pip install fulcrum-trust CTA + GitHub link
+- Stopped at: 03-02 Task 2 checkpoint:human-verify (awaiting human review of blog draft)
 
 ---
-*Last updated: 2026-02-18 (03-01 complete)*
+*Last updated: 2026-02-19 (03-02 Task 1 complete, checkpoint:human-verify pending)*
