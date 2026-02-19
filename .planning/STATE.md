@@ -3,8 +3,8 @@
 ## Current Position
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
-**Active Phase:** 03-demos
-**Current Plan:** Not started
+**Active Phase:** 03-demos-content
+**Current Plan:** 03-02 (next)
 **Ship Date:** ~March 17, 2026 (PyPI publish + blog post)
 
 ## Progress
@@ -16,6 +16,7 @@
 | 01-core-trust-engine | 01-03 | Package infrastructure (pyproject.toml, README, CI) | Complete |
 | 02-langgraph-adapter | 02-01 | TrustAwareGraph adapter implementation | Complete |
 | 02-langgraph-adapter | 02-02 | LangGraph adapter test suite | Complete |
+| 03-demos-content | 03-01 | Demo scripts (gratitude loop, drift detection, recovery) | Complete |
 
 ## Decisions Log
 
@@ -43,6 +44,7 @@
 | 2026-02-19 | async nodes in LangGraph 0.4.x use afunc path (not func) on RunnableCallable | _wrap_nodes must check both; afunc=None for sync nodes, func=None for async nodes |
 | 2026-02-19 | pragma: no cover on except ImportError fallbacks for optional deps | Unreachable when langgraph is installed; no behavioral value in mocking imports away |
 | 2026-02-19 | ainvoke required for async-only LangGraph nodes | .invoke() raises TypeError in 0.4.x: "No synchronous function provided" |
+| 2026-02-18 | DECAY_PER_ITER=0.015 for drift_detection.py | 0.012 broke at iter 106 (>90 limit); 0.015 breaks at iter 85 |
 
 ## Blockers
 
@@ -57,6 +59,7 @@ None active.
 | 01-core-trust-engine | 01-02 | 2min | 2 | 6 |
 | 02-langgraph-adapter | 02-01 | 10min | 2 | 3 |
 | 02-langgraph-adapter | 02-02 | 8min | 2 | 3 |
+| 03-demos-content | 03-01 | 3min | 3 | 3 |
 
 ## Implementation Notes
 
@@ -102,7 +105,12 @@ None active.
   - async node _wrap_nodes fix (afunc path for LangGraph 0.4.x)
   - langgraph.py 99% coverage, adapters/__init__.py 100% coverage
   - 97 total tests, 96.83% core coverage, mypy/ruff all pass
-- Stopped at: Completed 02-02-PLAN.md
+- 03-01 complete: three demo scripts (gratitude_loop.py, drift_detection.py, recovery.py)
+  - gratitude_loop --with-trust: breaks at iter 5 (alpha_weight=0.2/beta_weight=0.8)
+  - drift_detection: breaks at iter 85 with threshold=0.4, DECAY_PER_ITER=0.015
+  - recovery: 3-phase arc, trust drops to 0.25, resets to 0.500, rebuilds to 0.941
+  - No extra dependencies beyond fulcrum_trust + stdlib
+- Stopped at: Completed 03-01-PLAN.md
 
 ---
-*Last updated: 2026-02-19 (02-02 complete)*
+*Last updated: 2026-02-18 (03-01 complete)*
