@@ -3,8 +3,8 @@
 ## Current Position
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
-**Active Phase:** 04-ship
-**Current Plan:** Not started
+**Active Phase:** 04-ship-distribute
+**Current Plan:** 04-03 (04-02 complete)
 **Ship Date:** ~March 17, 2026 (PyPI publish + blog post)
 
 ## Progress
@@ -18,6 +18,7 @@
 | 02-langgraph-adapter | 02-02 | LangGraph adapter test suite | Complete |
 | 03-demos-content | 03-01 | Demo scripts (gratitude loop, drift detection, recovery) | Complete |
 | 03-demos-content | 03-02 | Blog post draft (docs/blog-trust-circuit-breaker.md) | Complete |
+| 04-ship-distribute | 04-02 | PyPI publish workflow (OIDC Trusted Publishing) | Complete |
 
 ## Decisions Log
 
@@ -49,6 +50,9 @@
 | 2026-02-19 | Blog post opens with $47K blockquote; math in Section 5 | Story-first structure — numbers after context |
 | 2026-02-19 | beta_val used in blog post (not beta) | Consistent with TrustState.beta_val in types.py |
 | 2026-02-19 | partial_beta_weight=0.8 documented as primary tuning lever | Prevents gratitude-loop plateau at 0.5 |
+| 2026-02-19 | id-token: write at job level (not workflow level) in publish.yml | Minimum privilege — each publish job gets OIDC token only when needed |
+| 2026-02-19 | TestPyPI-first serialization in publish pipeline | Prevents shipping broken package to real PyPI index |
+| 2026-02-19 | pypa/gh-action-pypi-publish@release/v1 (not @master) | @master branch is sunset per PyPA docs |
 
 ## Blockers
 
@@ -65,6 +69,7 @@ None active.
 | 02-langgraph-adapter | 02-02 | 8min | 2 | 3 |
 | 03-demos-content | 03-01 | 3min | 3 | 3 |
 | 03-demos-content | 03-02 | 3min | 1 | 1 |
+| 04-ship-distribute | 04-02 | 1min | 1 | 1 |
 
 ## Implementation Notes
 
@@ -123,6 +128,12 @@ None active.
   - Ends with pip install fulcrum-trust CTA + GitHub link
 - 03-02 complete: blog post human review approved; Phase 03 fully done
 - Stopped at: Completed 03-02-PLAN.md (Phase 03 complete, advancing to Phase 04)
+- 04-02 complete: .github/workflows/publish.yml created (commit 813e393)
+  - Three-job pipeline: build → publish-testpypi → publish-pypi
+  - OIDC Trusted Publishing; id-token: write at job level; no stored secrets
+  - Triggers on v* tag push; TestPyPI-first serialization
+  - Uses pypa/gh-action-pypi-publish@release/v1 and actions/upload-artifact@v4
+- Stopped at: Completed 04-02-PLAN.md
 
 ---
-*Last updated: 2026-02-19 (03-02 complete, human-verify approved, Phase 03 done)*
+*Last updated: 2026-02-19 (04-02 complete: publish.yml OIDC pipeline)*
