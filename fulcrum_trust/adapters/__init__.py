@@ -4,7 +4,7 @@ try:
     from langgraph.graph import StateGraph as _SG  # noqa: F401
 
     _LANGGRAPH_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover
     _LANGGRAPH_AVAILABLE = False
 
 if _LANGGRAPH_AVAILABLE:

@@ -12,7 +12,7 @@ try:
     from langgraph.graph import StateGraph
 
     _LANGGRAPH_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover
     _LANGGRAPH_AVAILABLE = False
 
 if TYPE_CHECKING:
@@ -321,9 +321,12 @@ class TrustAwareGraph:
 
         Supports two node layouts observed across LangGraph versions:
 
-        - StateNodeSpec NamedTuple with ``.runnable.func`` (LangGraph 0.2+/0.4+):
+        - StateNodeSpec NamedTuple with ``.runnable.func`` (sync) or
+          ``.runnable.afunc`` (async) (LangGraph 0.2+/0.4+):
           extracts the original callable, wraps it, creates a new RunnableCallable,
           and uses ``_replace()`` to produce an updated spec (NamedTuple is immutable).
+          For async nodes, ``func`` is None and ``afunc`` holds the coroutine function;
+          we wrap ``afunc`` and pass it as the ``afunc`` keyword to RunnableCallable.
         - Direct callable entry: wraps and assigns directly.
 
         The graph's ``nodes`` dict is mutated in place via a local ``Any`` alias to
@@ -335,23 +338,39 @@ class TrustAwareGraph:
                 continue
             runnable = getattr(spec, "runnable", None)
             original_fn: Callable[[Any], Any] | None = getattr(runnable, "func", None)
+            original_afn: Callable[[Any], Any] | None = getattr(runnable, "afunc", None)
+            new_runnable: Any
             if original_fn is not None:
                 wrapped = self._make_node_wrapper(original_fn)
                 # Build a replacement runnable. Prefer langgraph.utils.runnable.
                 # RunnableCallable (native async/sync dispatch) over RunnableLambda.
-                new_runnable: Any
                 try:
                     from langgraph.utils.runnable import RunnableCallable
 
                     new_runnable = RunnableCallable(wrapped)
-                except ImportError:
+                except ImportError:  # pragma: no cover
                     from langchain_core.runnables import RunnableLambda
 
                     new_runnable = RunnableLambda(wrapped)
                 # StateNodeSpec is a NamedTuple; _replace() creates a new instance.
                 new_spec = spec._replace(runnable=new_runnable)
                 graph.nodes[name] = new_spec
-            elif callable(spec):
+            elif original_afn is not None:
+                # Async node (LangGraph 0.4.x): afunc holds the coroutine function;
+                # func is None. Wrap afunc and pass None as the sync func so LangGraph
+                # routes async invocations through the afunc path correctly.
+                wrapped_async = self._make_node_wrapper(original_afn)
+                try:
+                    from langgraph.utils.runnable import RunnableCallable
+
+                    new_runnable = RunnableCallable(None, wrapped_async)
+                except ImportError:  # pragma: no cover
+                    from langchain_core.runnables import RunnableLambda
+
+                    new_runnable = RunnableLambda(wrapped_async)
+                new_spec = spec._replace(runnable=new_runnable)
+                graph.nodes[name] = new_spec
+            elif callable(spec):  # pragma: no cover
                 # Direct callable layout (rare, future-proofing).
                 graph.nodes[name] = self._make_node_wrapper(spec)
 
