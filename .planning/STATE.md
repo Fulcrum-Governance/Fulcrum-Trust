@@ -143,6 +143,12 @@ None active.
   - All quality gates green: mypy strict 0 errors, 97 tests at 96.83% coverage, twine PASSED
   - dist/ contains fulcrum_trust-0.1.0-py3-none-any.whl and fulcrum_trust-0.1.0.tar.gz
 - Stopped at: Completed 04-01-PLAN.md
+- 04-03 Task 1 complete: pre-publish verification passed (2026-02-19)
+  - Clean git working tree; mypy strict 0 errors; ruff all pass; 97 tests 96.83% coverage
+  - Clean build: dist/fulcrum_trust-0.1.0-py3-none-any.whl + fulcrum_trust-0.1.0.tar.gz — twine PASSED
+  - NOTE: main branch not yet pushed to GitHub remote (only initial scaffold at remote)
+  - Push main to GitHub required before tag push (publish.yml must exist on remote)
+- Stopped at: 04-03 checkpoint:human-action — awaiting PyPI OIDC config + tag push
 
 ---
-*Last updated: 2026-02-19 (04-01 complete: polish + docs; all quality gates green)*
+*Last updated: 2026-02-19 (04-03 Task 1 complete: pre-publish verified; paused at OIDC/tag checkpoint)*
