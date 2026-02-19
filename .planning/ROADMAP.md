@@ -7,7 +7,7 @@ Build and ship a pure Python package that provides trust-based circuit breaking 
 ## Phases
 
 - [x] **Phase 1: Core Trust Engine** - Beta(α,β) evaluator, stores, decay — 95%+ coverage (completed 2026-02-18)
-- [ ] **Phase 2: LangGraph Adapter** - TrustAwareGraph wrapper with outcome classification and circuit breaking
+- [x] **Phase 2: LangGraph Adapter** - TrustAwareGraph wrapper with outcome classification and circuit breaking (completed 2026-02-19)
 - [ ] **Phase 3: Demos + Content** - Three runnable demos proving the thesis, blog post draft
 - [ ] **Phase 4: Ship + Distribute** - PyPI publish, CI/CD, README polish, community distribution
 
@@ -87,6 +87,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Core Trust Engine | 0/3 | Complete    | 2026-02-18 |
-| 2. LangGraph Adapter | 0/2 | Not started | - |
+| 2. LangGraph Adapter | 0/2 | Complete    | 2026-02-19 |
 | 3. Demos + Content | 0/2 | Not started | - |
 | 4. Ship + Distribute | 0/4 | Not started | - |
