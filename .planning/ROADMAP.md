@@ -59,8 +59,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: All three demo scripts (gratitude_loop, drift_detection, recovery)
-- [ ] 03-02: Blog post draft — math, demo, code example, vision
+- [ ] 03-01-PLAN.md — Three demo scripts: gratitude_loop.py (DEMO-01), drift_detection.py (DEMO-02), recovery.py (DEMO-03)
+- [ ] 03-02-PLAN.md — Blog post draft: docs/blog-trust-circuit-breaker.md (1800-2200 words, $47K hook, Beta math, limitations)
 
 ### Phase 4: Ship + Distribute
 **Goal**: v0.1.0 published on PyPI. GitHub release tagged. Community distribution started. Install count tracking active.
