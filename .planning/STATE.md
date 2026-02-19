@@ -3,8 +3,8 @@
 ## Current Position
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
-**Active Phase:** 02-langgraph-adapter
-**Current Plan:** 02-02
+**Active Phase:** 03-demos
+**Current Plan:** 03-01
 **Ship Date:** ~March 17, 2026 (PyPI publish + blog post)
 
 ## Progress
@@ -15,6 +15,7 @@
 | 01-core-trust-engine | 01-02 | Test suite | Complete |
 | 01-core-trust-engine | 01-03 | Package infrastructure (pyproject.toml, README, CI) | Complete |
 | 02-langgraph-adapter | 02-01 | TrustAwareGraph adapter implementation | Complete |
+| 02-langgraph-adapter | 02-02 | LangGraph adapter test suite | Complete |
 
 ## Decisions Log
 
@@ -39,6 +40,9 @@
 | 2026-02-19 | _make_routing_fn at module level (not inside loop) | Avoids ruff B023 loop-closure lint; also cleaner separation |
 | 2026-02-19 | local Any alias pattern for internal LangGraph API access | Concentrates type suppression in one place per method instead of scattered type: ignore |
 | 2026-02-19 | langgraph added to dev extras (not just langgraph extra) | CI installs it without user needing to specify the extra |
+| 2026-02-19 | async nodes in LangGraph 0.4.x use afunc path (not func) on RunnableCallable | _wrap_nodes must check both; afunc=None for sync nodes, func=None for async nodes |
+| 2026-02-19 | pragma: no cover on except ImportError fallbacks for optional deps | Unreachable when langgraph is installed; no behavioral value in mocking imports away |
+| 2026-02-19 | ainvoke required for async-only LangGraph nodes | .invoke() raises TypeError in 0.4.x: "No synchronous function provided" |
 
 ## Blockers
 
@@ -52,6 +56,7 @@ None active.
 | 01-core-trust-engine | 01-01 | 5min | 2 | 9 |
 | 01-core-trust-engine | 01-02 | 2min | 2 | 6 |
 | 02-langgraph-adapter | 02-01 | 10min | 2 | 3 |
+| 02-langgraph-adapter | 02-02 | 8min | 2 | 3 |
 
 ## Implementation Notes
 
@@ -93,7 +98,11 @@ None active.
   - LangGraph 0.4.x API compatibility fixes (StateNodeSpec._replace, RunnableCallable)
   - mypy strict 0 errors, ruff all pass, 73 existing tests still green
   - Hard termination via conditional edges (LANG-03) confirmed working
-- Stopped at: Completed 02-01-PLAN.md
+- 02-02 complete: 24-test suite proving all LANG-01..LANG-04 requirements
+  - async node _wrap_nodes fix (afunc path for LangGraph 0.4.x)
+  - langgraph.py 99% coverage, adapters/__init__.py 100% coverage
+  - 97 total tests, 96.83% core coverage, mypy/ruff all pass
+- Stopped at: Completed 02-02-PLAN.md
 
 ---
-*Last updated: 2026-02-19*
+*Last updated: 2026-02-19 (02-02 complete)*
