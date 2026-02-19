@@ -43,8 +43,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TrustAwareGraph wrapper + outcome classifier implementation
-- [ ] 02-02: LangGraph adapter integration tests
+- [ ] 02-01-PLAN.md — TrustAwareGraph wrapper, OutcomeClassifier, CallbackRegistry + pyproject.toml langgraph dep
+- [ ] 02-02-PLAN.md — LangGraph adapter integration + unit tests, coverage gate
 
 ### Phase 3: Demos + Content
 **Goal**: Three runnable demos that prove the thesis. Blog post draft ready for review.
