@@ -1,8 +1,11 @@
 from __future__ import annotations
+
 import math
 import time
+
 import pytest
-from fulcrum_trust.decay import apply_decay, _decay_factor
+
+from fulcrum_trust.decay import _decay_factor, apply_decay
 from fulcrum_trust.types import TrustState
 
 
@@ -30,7 +33,7 @@ class TestApplyDecay:
             pair_id="test",
             agent_a="a",
             agent_b="b",
-            alpha=3.0,   # trust_score=0.75 before decay
+            alpha=3.0,  # trust_score=0.75 before decay
             beta_val=1.0,
             interaction_count=2,
         )

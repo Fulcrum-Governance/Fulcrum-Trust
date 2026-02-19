@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import hashlib
 import time
+
 from fulcrum_trust.types import TrustConfig, TrustOutcome, TrustState
 
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import pytest
+
 from fulcrum_trust.evaluator import TrustEvaluator, make_pair_id
 from fulcrum_trust.types import TrustConfig, TrustOutcome
 

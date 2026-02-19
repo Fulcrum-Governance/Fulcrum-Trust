@@ -13,6 +13,7 @@ Run:
     pip install -e .
     python examples/drift_detection.py
 """
+
 from __future__ import annotations
 
 import sys
@@ -21,20 +22,21 @@ from fulcrum_trust import TrustConfig, TrustManager, TrustOutcome
 from fulcrum_trust.types import TrustState
 
 # ── ANSI colours (no external library) ───────────────────────────────────────
-GREEN  = "\033[32m"
+GREEN = "\033[32m"
 YELLOW = "\033[33m"
-RED    = "\033[31m"
-BOLD   = "\033[1m"
-RESET  = "\033[0m"
+RED = "\033[31m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 
 # ── Simulation parameters ─────────────────────────────────────────────────────
 MAX_ITERATIONS = 120
-DECAY_PER_ITER = 0.015   # quality drops 1.5% per iteration
+DECAY_PER_ITER = 0.015  # quality drops 1.5% per iteration
 AGENT_ORCHESTRATOR = "orchestrator"
 AGENT_WORKER = "worker"
 
 
 # ── Quality simulation ────────────────────────────────────────────────────────
+
 
 def simulate_quality(iteration: int) -> float:
     """Quality degrades linearly. Reaches PARTIAL zone at iter ~20, FAILURE at iter ~47."""
@@ -60,6 +62,7 @@ def quality_label(quality: float) -> str:
 
 # ── Output helpers ────────────────────────────────────────────────────────────
 
+
 def score_color(score: float) -> str:
     if score >= 0.5:
         return GREEN
@@ -69,9 +72,9 @@ def score_color(score: float) -> str:
 
 
 def print_header(title: str) -> None:
-    print(f"\n{BOLD}{'='*65}{RESET}")
+    print(f"\n{BOLD}{'=' * 65}{RESET}")
     print(f"{BOLD}  {title}{RESET}")
-    print(f"{BOLD}{'='*65}{RESET}\n")
+    print(f"{BOLD}{'=' * 65}{RESET}\n")
 
 
 def print_iter(
@@ -94,6 +97,7 @@ def print_iter(
 
 # ── Main demo ─────────────────────────────────────────────────────────────────
 
+
 def run_drift_demo() -> None:
     print_header("DRIFT DETECTION DEMO")
     print(
@@ -104,11 +108,9 @@ def run_drift_demo() -> None:
         f"  Config: threshold=0.4, {MAX_ITERATIONS} iterations,"
         f" quality decay={DECAY_PER_ITER}/iter\n"
     )
-    print(f"  Quality zones: >= 0.7 SUCCESS | 0.3-0.7 PARTIAL | < 0.3 FAILURE\n")
+    print("  Quality zones: >= 0.7 SUCCESS | 0.3-0.7 PARTIAL | < 0.3 FAILURE\n")
 
-    mgr = TrustManager(
-        config=TrustConfig(threshold=0.4)
-    )
+    mgr = TrustManager(config=TrustConfig(threshold=0.4))
 
     broke = False
     final_state: TrustState | None = None
@@ -127,7 +129,7 @@ def run_drift_demo() -> None:
             break
 
     print()
-    print(f"{BOLD}{'='*65}{RESET}")
+    print(f"{BOLD}{'=' * 65}{RESET}")
     if broke and final_state is not None:
         print(
             f"{RED}{BOLD}  DRIFT DETECTED"
@@ -151,10 +153,8 @@ def run_drift_demo() -> None:
             f"{YELLOW}{BOLD}  Demo ran all {MAX_ITERATIONS} iterations"
             f" without triggering circuit break.{RESET}"
         )
-        print(
-            f"  Check TrustConfig threshold or decay rate if this is unexpected."
-        )
-    print(f"{BOLD}{'='*65}{RESET}\n")
+        print("  Check TrustConfig threshold or decay rate if this is unexpected.")
+    print(f"{BOLD}{'=' * 65}{RESET}\n")
 
 
 if __name__ == "__main__":

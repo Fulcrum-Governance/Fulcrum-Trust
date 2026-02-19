@@ -11,6 +11,7 @@ Run:
     python examples/gratitude_loop.py --with-trust
     python examples/gratitude_loop.py --without-trust
 """
+
 from __future__ import annotations
 
 import argparse
@@ -20,11 +21,11 @@ from fulcrum_trust import TrustConfig, TrustManager, TrustOutcome
 from fulcrum_trust.types import TrustState
 
 # ── ANSI colours (no external library) ───────────────────────────────────────
-GREEN  = "\033[32m"
+GREEN = "\033[32m"
 YELLOW = "\033[33m"
-RED    = "\033[31m"
-BOLD   = "\033[1m"
-RESET  = "\033[0m"
+RED = "\033[31m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 
 # ── Simulation constants ──────────────────────────────────────────────────────
 MAX_ITERATIONS = 50
@@ -47,6 +48,7 @@ def agent_response(agent_name: str, iteration: int) -> str:
 
 # ── Output helpers ────────────────────────────────────────────────────────────
 
+
 def score_color(score: float) -> str:
     if score >= 0.5:
         return GREEN
@@ -56,9 +58,9 @@ def score_color(score: float) -> str:
 
 
 def print_header(title: str) -> None:
-    print(f"\n{BOLD}{'='*60}{RESET}")
+    print(f"\n{BOLD}{'=' * 60}{RESET}")
     print(f"{BOLD}  {title}{RESET}")
-    print(f"{BOLD}{'='*60}{RESET}\n")
+    print(f"{BOLD}{'=' * 60}{RESET}\n")
 
 
 def print_iter(n: int, state: TrustState, terminated: bool) -> None:
@@ -71,12 +73,12 @@ def print_iter(n: int, state: TrustState, terminated: bool) -> None:
 
 
 def print_no_trust_iter(n: int, response_a: str) -> None:
-    print(f"  [{n:3d}] {AGENT_A}: \"{response_a[:45]}...\"")
+    print(f'  [{n:3d}] {AGENT_A}: "{response_a[:45]}..."')
 
 
 def print_summary(terminated: bool, iterations: int, score: float | None) -> None:
     print()
-    print(f"{BOLD}{'='*60}{RESET}")
+    print(f"{BOLD}{'=' * 60}{RESET}")
     if terminated and score is not None:
         print(f"{RED}{BOLD}  TERMINATED: Trust circuit break{RESET}")
         print(f"  After {iterations} iteration(s)")
@@ -85,18 +87,19 @@ def print_summary(terminated: bool, iterations: int, score: float | None) -> Non
             f"  Estimated tokens saved vs. unchecked run:"
             f" ~{MAX_ITERATIONS - iterations} iterations"
         )
-        print(f"  (In production at scale: thousands of API calls avoided)")
+        print("  (In production at scale: thousands of API calls avoided)")
     else:
         print(
             f"{RED}{BOLD}  RUNAWAY LOOP: No circuit breaker"
             f" — ran all {iterations} iterations{RESET}"
         )
-        print(f"  Nothing stopped this loop. In production, this runs indefinitely.")
-        print(f"  The $47K incident ran for 11 days.")
-    print(f"{BOLD}{'='*60}{RESET}\n")
+        print("  Nothing stopped this loop. In production, this runs indefinitely.")
+        print("  The $47K incident ran for 11 days.")
+    print(f"{BOLD}{'=' * 60}{RESET}\n")
 
 
 # ── Run modes ─────────────────────────────────────────────────────────────────
+
 
 def run_with_trust() -> None:
     """TrustManager terminates the gratitude loop within 15 iterations."""
@@ -148,6 +151,7 @@ def run_without_trust() -> None:
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(

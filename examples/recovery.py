@@ -11,6 +11,7 @@ Run:
     pip install -e .
     python examples/recovery.py
 """
+
 from __future__ import annotations
 
 import sys
@@ -19,12 +20,12 @@ from fulcrum_trust import TrustConfig, TrustManager, TrustOutcome
 from fulcrum_trust.types import TrustState
 
 # ── ANSI colours (no external library) ───────────────────────────────────────
-GREEN  = "\033[32m"
+GREEN = "\033[32m"
 YELLOW = "\033[33m"
-RED    = "\033[31m"
-CYAN   = "\033[36m"
-BOLD   = "\033[1m"
-RESET  = "\033[0m"
+RED = "\033[31m"
+CYAN = "\033[36m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 AGENT_ORCHESTRATOR = "orchestrator"
@@ -32,6 +33,7 @@ AGENT_WORKER = "worker"
 
 
 # ── Output helpers ────────────────────────────────────────────────────────────
+
 
 def score_color(score: float) -> str:
     if score >= 0.5:
@@ -42,9 +44,9 @@ def score_color(score: float) -> str:
 
 
 def print_phase_header(phase: str, color: str) -> None:
-    print(f"\n{BOLD}{color}{'─'*55}{RESET}")
+    print(f"\n{BOLD}{color}{'─' * 55}{RESET}")
     print(f"{BOLD}{color}  PHASE: {phase}{RESET}")
-    print(f"{BOLD}{color}{'─'*55}{RESET}\n")
+    print(f"{BOLD}{color}{'─' * 55}{RESET}\n")
 
 
 def print_trust_row(
@@ -70,15 +72,14 @@ def print_trust_row(
 
 # ── Main demo ─────────────────────────────────────────────────────────────────
 
+
 def run_recovery_demo() -> None:
-    print(f"\n{BOLD}{'='*55}{RESET}")
+    print(f"\n{BOLD}{'=' * 55}{RESET}")
     print(f"{BOLD}  RECOVERY DEMO — fulcrum-trust{RESET}")
-    print(f"{BOLD}{'='*55}{RESET}")
+    print(f"{BOLD}{'=' * 55}{RESET}")
     print("\n  Trust degrades -> circuit breaks -> agent is reset -> trust rebuilds.\n")
 
-    mgr = TrustManager(
-        config=TrustConfig(threshold=0.3)
-    )
+    mgr = TrustManager(config=TrustConfig(threshold=0.3))
 
     # ── Phase 1: Degradation ──────────────────────────────────────────────────
     print_phase_header("1. DEGRADATION", RED)
@@ -119,7 +120,7 @@ def run_recovery_demo() -> None:
         f"  Trust state cleared. Score reverts to prior:"
         f" {GREEN}{score_after_reset:.3f}{RESET}"
     )
-    print(f"  (Uninformative prior: α=1.0, β=1.0 -> score=0.500)\n")
+    print("  (Uninformative prior: α=1.0, β=1.0 -> score=0.500)\n")
 
     # ── Phase 3: Recovery ─────────────────────────────────────────────────────
     print_phase_header("3. RECOVERY", GREEN)
@@ -133,7 +134,7 @@ def run_recovery_demo() -> None:
     # ── Final summary ─────────────────────────────────────────────────────────
     final_state = mgr.get_state(AGENT_ORCHESTRATOR, AGENT_WORKER)
     print()
-    print(f"{BOLD}{'='*55}{RESET}")
+    print(f"{BOLD}{'=' * 55}{RESET}")
     print(f"{BOLD}  RECOVERY COMPLETE{RESET}")
     if final_state is not None:
         c = score_color(final_state.trust_score)
@@ -154,7 +155,7 @@ def run_recovery_demo() -> None:
             )
         else:
             print(f"  {RED}Trust still below threshold. Recovery incomplete.{RESET}")
-    print(f"{BOLD}{'='*55}{RESET}\n")
+    print(f"{BOLD}{'=' * 55}{RESET}\n")
 
 
 if __name__ == "__main__":

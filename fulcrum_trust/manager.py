@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import dataclasses
+
 from fulcrum_trust.decay import apply_decay
 from fulcrum_trust.evaluator import TrustEvaluator, make_pair_id
 from fulcrum_trust.stores.base import TrustStore
@@ -27,9 +29,7 @@ class TrustManager:
         self._store: TrustStore = store if store is not None else MemoryStore()
         self._evaluator = TrustEvaluator(self._config)
 
-    def evaluate(
-        self, agent_a: str, agent_b: str, outcome: TrustOutcome
-    ) -> TrustState:
+    def evaluate(self, agent_a: str, agent_b: str, outcome: TrustOutcome) -> TrustState:
         """Record outcome and return updated trust state.
 
         Applies decay first (lazy decay on read), then records new outcome.
@@ -73,7 +73,9 @@ class TrustManager:
             )
         # Apply decay for accurate current score (read-only, do not persist)
         # Use a copy to avoid mutating the stored state object.
-        decayed = apply_decay(dataclasses.replace(state), self._config.half_life_seconds)
+        decayed = apply_decay(
+            dataclasses.replace(state), self._config.half_life_seconds
+        )
         return decayed.trust_score
 
     def should_terminate(self, agent_a: str, agent_b: str) -> bool:
@@ -91,7 +93,9 @@ class TrustManager:
         if state is None:
             return False  # Unknown pair: full trust, no termination
         # Use a copy to avoid mutating the stored state object.
-        decayed = apply_decay(dataclasses.replace(state), self._config.half_life_seconds)
+        decayed = apply_decay(
+            dataclasses.replace(state), self._config.half_life_seconds
+        )
         return self._evaluator.is_below_threshold(decayed)
 
     def get_state(self, agent_a: str, agent_b: str) -> TrustState | None:

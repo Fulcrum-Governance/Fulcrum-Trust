@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from fulcrum_trust.types import TrustState
 
 

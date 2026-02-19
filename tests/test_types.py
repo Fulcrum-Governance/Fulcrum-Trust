@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import pytest
+
 from fulcrum_trust.types import TrustConfig, TrustOutcome, TrustState
 
 
@@ -20,11 +22,15 @@ class TestTrustState:
         assert state.trust_score == pytest.approx(0.5)
 
     def test_trust_score_after_successes(self) -> None:
-        state = TrustState(pair_id="abc", agent_a="a", agent_b="b", alpha=3.0, beta_val=1.0)
+        state = TrustState(
+            pair_id="abc", agent_a="a", agent_b="b", alpha=3.0, beta_val=1.0
+        )
         assert state.trust_score == pytest.approx(0.75)
 
     def test_trust_score_after_failures(self) -> None:
-        state = TrustState(pair_id="abc", agent_a="a", agent_b="b", alpha=1.0, beta_val=3.0)
+        state = TrustState(
+            pair_id="abc", agent_a="a", agent_b="b", alpha=1.0, beta_val=3.0
+        )
         assert state.trust_score == pytest.approx(0.25)
 
     def test_interaction_count_defaults_to_zero(self) -> None:
@@ -33,6 +39,7 @@ class TestTrustState:
 
     def test_last_updated_is_set_on_creation(self) -> None:
         import time
+
         before = time.time()
         state = TrustState(pair_id="abc", agent_a="a", agent_b="b")
         after = time.time()

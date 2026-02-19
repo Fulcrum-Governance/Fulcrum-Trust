@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 import time
+
 import pytest
-from fulcrum_trust import TrustManager, TrustOutcome, TrustConfig
-from fulcrum_trust.stores.memory import MemoryStore
+
+from fulcrum_trust import TrustConfig, TrustManager, TrustOutcome
 from fulcrum_trust.stores.file import FileStore
 
 
@@ -134,7 +136,9 @@ class TestDecayIntegration:
 
 
 class TestFileStorePersistence:
-    def test_persists_across_manager_instances(self, tmp_path: pytest.TempPathFactory) -> None:
+    def test_persists_across_manager_instances(
+        self, tmp_path: pytest.TempPathFactory
+    ) -> None:
         """TrustManager with FileStore preserves history across instances (TRUST-05, TRUST-06)."""
         path = tmp_path / "trust.json"
         tm1 = TrustManager(store=FileStore(path))

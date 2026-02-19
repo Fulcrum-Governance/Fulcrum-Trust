@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 import pytest
-from fulcrum_trust.stores.memory import MemoryStore
-from fulcrum_trust.stores.file import FileStore
+
 from fulcrum_trust.stores.base import TrustStore
+from fulcrum_trust.stores.file import FileStore
+from fulcrum_trust.stores.memory import MemoryStore
 from fulcrum_trust.types import TrustState
 
 
@@ -69,7 +71,9 @@ class TestMemoryStore:
 
 
 class TestFileStore:
-    def test_get_unknown_pair_returns_none(self, tmp_path: pytest.TempPathFactory) -> None:
+    def test_get_unknown_pair_returns_none(
+        self, tmp_path: pytest.TempPathFactory
+    ) -> None:
         store = FileStore(tmp_path / "trust.json")
         assert store.get("unknown") is None
 
