@@ -29,11 +29,13 @@ dependencies = []
 
 [project.optional-dependencies]
 numpy = ["numpy>=1.21"]
+langgraph = ["langgraph>=0.2.0,<1.0.0"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.1",
+    "langgraph>=0.2.0,<1.0.0",
 ]
 
 [project.urls]
@@ -78,6 +80,14 @@ warn_unused_configs = true
 
 [[tool.mypy.overrides]]
 module = "numpy"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "langgraph.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "langchain_core.*"
 ignore_missing_imports = true
 
 # Ruff: lint + format, targeting Python 3.9

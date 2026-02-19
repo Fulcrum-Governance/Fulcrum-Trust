@@ -3,20 +3,51 @@ from __future__ import annotations
 import asyncio
 import functools
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, List, Optional
+from typing import TYPE_CHECKING, Any, Callable
 
 from fulcrum_trust.manager import TrustManager
 from fulcrum_trust.types import TrustOutcome, TrustState
 
 try:
-    from langgraph.graph import END, StateGraph  # type: ignore[import]
+    from langgraph.graph import StateGraph
 
     _LANGGRAPH_AVAILABLE = True
 except ImportError:
     _LANGGRAPH_AVAILABLE = False
 
 if TYPE_CHECKING:
-    from langgraph.graph import END, StateGraph  # type: ignore[import]
+    from langgraph.graph import StateGraph
+
+
+def _make_routing_fn(
+    trust_manager: TrustManager, agent_a: str, agent_b: str, normal_next: str
+) -> Callable[[Any], str]:
+    """Build a routing function for conditional edge injection.
+
+    The returned function routes to ``"terminate"`` (END) when
+    ``trust_manager.should_terminate()`` returns True for the given agent pair,
+    and to ``"continue"`` (normal_next) otherwise.
+
+    Defined at module level to avoid the B023 lint warning about closures that
+    capture loop variables.
+
+    Args:
+        trust_manager: TrustManager instance for termination decisions.
+        agent_a: First agent identifier.
+        agent_b: Second agent identifier.
+        normal_next: Normal destination node name when trust is healthy.
+
+    Returns:
+        A routing function suitable for use with ``add_conditional_edges``.
+    """
+
+    def routing_fn(state: Any) -> str:
+        """Route to END if trust is below threshold, else continue normally."""
+        if trust_manager.should_terminate(agent_a, agent_b):
+            return "terminate"
+        return "continue"
+
+    return routing_fn
 
 
 @dataclass
@@ -32,9 +63,9 @@ class CallbackRegistry:
         on_recovery: Called when trust recovers above the threshold after a break.
     """
 
-    on_trust_change: List[Callable[[TrustState], None]] = field(default_factory=list)
-    on_circuit_break: List[Callable[[TrustState], None]] = field(default_factory=list)
-    on_recovery: List[Callable[[TrustState], None]] = field(default_factory=list)
+    on_trust_change: list[Callable[[TrustState], None]] = field(default_factory=list)
+    on_circuit_break: list[Callable[[TrustState], None]] = field(default_factory=list)
+    on_recovery: list[Callable[[TrustState], None]] = field(default_factory=list)
 
     def fire_trust_change(self, state: TrustState) -> None:
         """Fire all on_trust_change callbacks with the given TrustState.
@@ -135,7 +166,7 @@ class OutcomeClassifier:
                         )
                         or (
                             isinstance(node_output[k], (list, dict))
-                            and len(node_output[k]) > 0  # type: ignore[arg-type]
+                            and len(node_output[k]) > 0
                         )
                         for k in overlapping_keys
                     )
@@ -179,7 +210,7 @@ class TrustAwareGraph:
 
     def __init__(
         self,
-        graph: "StateGraph",
+        graph: StateGraph,
         trust_manager: TrustManager,
         agent_a: str = "orchestrator",
         agent_b: str = "worker",
@@ -253,9 +284,7 @@ class TrustAwareGraph:
             self._callbacks.fire_recovery(trust_state)
         self._was_terminated = is_terminated
 
-    def _make_node_wrapper(
-        self, node_fn: Callable[[Any], Any]
-    ) -> Callable[[Any], Any]:
+    def _make_node_wrapper(self, node_fn: Callable[[Any], Any]) -> Callable[[Any], Any]:
         """Wrap a node callable with trust evaluation logic.
 
         Detects whether the callable is async and produces the appropriate
@@ -276,7 +305,7 @@ class TrustAwareGraph:
                 self._evaluate_and_route(state, result)
                 return result
 
-            return async_wrapped  # type: ignore[return-value]
+            return async_wrapped
         else:
 
             @functools.wraps(node_fn)
@@ -286,6 +315,92 @@ class TrustAwareGraph:
                 return result
 
             return sync_wrapped
+
+    def _wrap_nodes(self) -> None:
+        """Replace each node callable in the graph with a trust-evaluating wrapper.
+
+        Supports two node layouts observed across LangGraph versions:
+
+        - StateNodeSpec NamedTuple with ``.runnable.func`` (LangGraph 0.2+/0.4+):
+          extracts the original callable, wraps it, creates a new RunnableCallable,
+          and uses ``_replace()`` to produce an updated spec (NamedTuple is immutable).
+        - Direct callable entry: wraps and assigns directly.
+
+        The graph's ``nodes`` dict is mutated in place via a local ``Any`` alias to
+        avoid mypy errors against LangGraph's internal types.
+        """
+        graph: Any = self._graph  # local Any alias for internal-API access
+        for name, spec in list(graph.nodes.items()):
+            if name == "__start__":
+                continue
+            runnable = getattr(spec, "runnable", None)
+            original_fn: Callable[[Any], Any] | None = getattr(runnable, "func", None)
+            if original_fn is not None:
+                wrapped = self._make_node_wrapper(original_fn)
+                # Build a replacement runnable. Prefer langgraph.utils.runnable.
+                # RunnableCallable (native async/sync dispatch) over RunnableLambda.
+                new_runnable: Any
+                try:
+                    from langgraph.utils.runnable import RunnableCallable
+
+                    new_runnable = RunnableCallable(wrapped)
+                except ImportError:
+                    from langchain_core.runnables import RunnableLambda
+
+                    new_runnable = RunnableLambda(wrapped)
+                # StateNodeSpec is a NamedTuple; _replace() creates a new instance.
+                new_spec = spec._replace(runnable=new_runnable)
+                graph.nodes[name] = new_spec
+            elif callable(spec):
+                # Direct callable layout (rare, future-proofing).
+                graph.nodes[name] = self._make_node_wrapper(spec)
+
+    def _inject_termination_edges(self) -> None:
+        """Inject conditional edges that route to END when trust is below threshold.
+
+        For each non-__start__ node that has a simple outgoing edge, this method:
+        1. Removes the simple edge from the graph's edge set.
+        2. Adds a conditional edge routing to ``END`` (key ``"terminate"``) when
+           ``should_terminate()`` is True, or to the original destination (key
+           ``"continue"``) otherwise.
+
+        Nodes with no simple outgoing edge (already conditional or terminal) are
+        skipped. ``graph.edges`` is a ``set`` of ``(src, dst)`` tuples in LangGraph
+        0.2+; the ``discard`` call is wrapped in a try/except for version resilience.
+        """
+        from langgraph.graph import END as _END
+
+        graph: Any = self._graph  # local Any alias for internal-API access
+
+        # Build source -> destination map from simple (non-conditional) edges.
+        edge_map: dict[str, str] = {}
+        for edge in graph.edges:
+            src, dst = edge  # each element is a (str, str) tuple
+            edge_map[src] = dst
+
+        node_names = [n for n in graph.nodes if n != "__start__"]
+
+        for node_name in node_names:
+            normal_next = edge_map.get(node_name)
+            if normal_next is None:
+                # No simple outgoing edge (already conditional or terminal). Skip.
+                continue
+
+            routing_fn = _make_routing_fn(
+                self._trust_manager, self._agent_a, self._agent_b, normal_next
+            )
+
+            # Remove the simple edge before adding the conditional one.
+            try:
+                graph.edges.discard((node_name, normal_next))
+            except AttributeError:
+                pass  # edges not a set in this LangGraph version — skip discard
+
+            graph.add_conditional_edges(
+                node_name,
+                routing_fn,
+                {"continue": normal_next, "terminate": _END},
+            )
 
     def compile(self, **kwargs: Any) -> Any:
         """Wrap all nodes with trust evaluation and inject conditional termination edges.
@@ -303,68 +418,7 @@ class TrustAwareGraph:
         Returns:
             A compiled LangGraph runnable ready for invocation.
         """
-        from langchain_core.runnables import RunnableLambda  # type: ignore[import]
-
-        # Step 1: Wrap node callables.
-        for name, spec in list(self._graph.nodes.items()):
-            if name == "__start__":
-                continue
-            try:
-                original_fn = spec.runnable.func  # type: ignore[union-attr]
-                wrapped = self._make_node_wrapper(original_fn)
-                spec.runnable = RunnableLambda(wrapped)  # type: ignore[union-attr]
-            except AttributeError:
-                if callable(spec):
-                    wrapped = self._make_node_wrapper(spec)  # type: ignore[arg-type]
-                    self._graph.nodes[name] = wrapped  # type: ignore[index]
-
-        # Step 2: Inject conditional edges for hard termination.
-        from langgraph.graph import END as _END
-
-        # Build source->destination map from simple edges.
-        # In LangGraph 0.2.x, self._graph.edges is a set of (src, dst) tuples.
-        edge_map: dict[str, str] = {}
-        for edge in self._graph.edges:
-            src, dst = edge  # each edge is a (str, str) tuple
-            edge_map[src] = dst
-
-        node_names = [n for n in self._graph.nodes if n != "__start__"]
-
-        for node_name in node_names:
-            normal_next = edge_map.get(node_name)
-            if normal_next is None:
-                # No simple outgoing edge (already conditional or terminal). Skip.
-                continue
-
-            _normal_next = normal_next
-            _agent_a = self._agent_a
-            _agent_b = self._agent_b
-            _tm = self._trust_manager
-
-            def _make_routing_fn(
-                agent_a: str, agent_b: str, normal_next: str
-            ) -> Callable[[Any], str]:
-                def routing_fn(state: Any) -> str:
-                    """Route to END if trust is below threshold, else continue."""
-                    if _tm.should_terminate(agent_a, agent_b):
-                        return "terminate"
-                    return "continue"
-
-                return routing_fn
-
-            routing_fn = _make_routing_fn(_agent_a, _agent_b, _normal_next)
-
-            # Remove the simple edge before adding the conditional one.
-            try:
-                self._graph.edges.discard((node_name, _normal_next))
-            except AttributeError:
-                pass  # edges not a set in this LangGraph version — skip discard
-
-            self._graph.add_conditional_edges(
-                node_name,
-                routing_fn,
-                {"continue": _normal_next, "terminate": _END},
-            )
-
-        # Step 3: Compile and return.
-        return self._graph.compile(**kwargs)
+        self._wrap_nodes()
+        self._inject_termination_edges()
+        graph: Any = self._graph
+        return graph.compile(**kwargs)
