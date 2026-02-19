@@ -4,7 +4,7 @@
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
 **Active Phase:** 04-ship
-**Current Plan:** 04-01 (not yet started)
+**Current Plan:** Not started
 **Ship Date:** ~March 17, 2026 (PyPI publish + blog post)
 
 ## Progress
