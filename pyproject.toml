@@ -25,6 +25,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+# Runtime intentionally stays dependency-light; FulcrumStore uses stdlib urllib.
 dependencies = []
 
 [project.optional-dependencies]

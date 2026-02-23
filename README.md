@@ -46,6 +46,25 @@ tm = TrustManager(
 )
 ```
 
+Send trust events to Fulcrum backend with `FulcrumStore`:
+
+```python
+from fulcrum_trust import FulcrumStore, TrustManager, TrustOutcome
+
+tm = TrustManager(
+    store=FulcrumStore(
+        api_key="your-fulcrum-api-key",
+        base_url="https://api.fulcrumlayer.io",  # or local dashboard URL
+    )
+)
+
+tm.evaluate("orchestrator", "code-agent", TrustOutcome.SUCCESS)
+```
+
+`FulcrumStore` writes locally first and then best-effort ships events to `POST /api/trust/events`
+using `X-API-Key`. If the network call fails, the agent keeps running and local trust state
+remains available.
+
 ## Install
 
 ```bash
@@ -83,7 +102,8 @@ fulcrum_trust/
 └── stores/
     ├── base.py     — TrustStore Protocol (structural subtyping)
     ├── memory.py   — MemoryStore (default, in-process)
-    └── file.py     — FileStore (JSON-backed, cross-session)
+    ├── file.py     — FileStore (JSON-backed, cross-session)
+    └── fulcrum.py  — FulcrumStore (local-first + backend event shipping)
 ```
 
 ## License
