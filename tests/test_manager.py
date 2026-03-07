@@ -6,6 +6,7 @@ import pytest
 
 from fulcrum_trust import TrustConfig, TrustManager, TrustOutcome
 from fulcrum_trust.stores.file import FileStore
+from fulcrum_trust.stores.memory import MemoryStore
 
 
 class TestGetTrustScore:
@@ -150,3 +151,41 @@ class TestFileStorePersistence:
         score2 = tm2.get_trust_score("a", "b")
         assert score2 == pytest.approx(score1, abs=0.001)
         assert tm2.get_state("a", "b") is not None
+
+
+class TestRaiseOnBreakIntegration:
+    def test_raise_on_break_parameter_exists(self) -> None:
+        """evaluate() accepts raise_on_break keyword argument."""
+        tm = TrustManager()
+        state = tm.evaluate("a", "b", TrustOutcome.SUCCESS, raise_on_break=False)
+        assert state.trust_score > 0.5
+
+
+class TestAsyncFlush:
+    def test_async_flush_true_creates_flusher(self) -> None:
+        tm = TrustManager(async_flush=True)
+        assert tm._flusher is not None
+        tm._flusher.shutdown()
+
+    def test_async_flush_false_no_flusher(self) -> None:
+        tm = TrustManager()
+        assert tm._flusher is None
+
+    def test_async_flush_default_is_false(self) -> None:
+        tm = TrustManager(async_flush=False)
+        assert tm._flusher is None
+
+    def test_async_flush_routes_through_flusher(self) -> None:
+        """With async_flush=True, evaluate() enqueues instead of direct store write."""
+        store = MemoryStore()
+        tm = TrustManager(store=store, async_flush=True)
+        tm.evaluate("a", "b", TrustOutcome.SUCCESS)
+        # Direct store should be empty (queued in flusher)
+        from fulcrum_trust.evaluator import make_pair_id
+
+        pid = make_pair_id("a", "b")
+        assert store.get(pid) is None  # not written directly
+        # Force flush
+        tm._flusher.flush()
+        assert store.get(pid) is not None  # now persisted
+        tm._flusher.shutdown()

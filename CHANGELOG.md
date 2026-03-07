@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `TrustCircuitOpen` exception: raised when `raise_on_break=True` and trust
+  drops below threshold after an evaluation (P-02, ADR-010)
+- `BackgroundFlusher`: thread-safe background batching for trust state events,
+  preventing synchronous store I/O from blocking agent execution (P-01, ADR-010)
+- `fulcrum_trust/context.py`: ContextVar-based execution isolation for concurrent
+  evaluations — Graph A trust state cannot contaminate Graph B (P-03, ADR-010)
+- `TrustManager(async_flush=True)`: opt-in async event persistence via BackgroundFlusher
+- `TrustManager.evaluate(raise_on_break=True)`: opt-in exception on circuit break
+- `TrustState.circuit_state` field (foundation for D2 durable quarantine)
+
 ## [0.1.0] - 2026-02-19
 
 ### Added

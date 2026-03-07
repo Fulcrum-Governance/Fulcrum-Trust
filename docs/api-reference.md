@@ -3,7 +3,7 @@
 This document covers all public classes and methods in `fulcrum-trust`. All classes are importable directly from `fulcrum_trust`.
 
 ```python
-from fulcrum_trust import TrustManager, TrustOutcome, TrustState, TrustConfig, MemoryStore, FileStore
+from fulcrum_trust import TrustManager, TrustOutcome, TrustState, TrustConfig, TrustCircuitOpen, MemoryStore, FileStore
 from fulcrum_trust.adapters.langgraph import TrustAwareGraph
 ```
 
@@ -22,17 +22,18 @@ The primary interface. Orchestrates trust evaluation, storage, and decay.
 **Constructor:**
 
 ```python
-TrustManager(store=None, config=None)
+TrustManager(store=None, config=None, *, async_flush=False)
 ```
 
 - `store` — A `TrustStore` instance. Defaults to `MemoryStore()`.
 - `config` — A `TrustConfig` instance. Defaults to `TrustConfig()`.
+- `async_flush` — When `True`, routes store writes through a `BackgroundFlusher` for non-blocking persistence. Default `False`.
 
 **Key methods:**
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `evaluate` | `(agent_a, agent_b, outcome) -> TrustState` | Record an interaction result; applies decay first, then Bayesian update |
+| `evaluate` | `(agent_a, agent_b, outcome, *, raise_on_break=False) -> TrustState` | Record an interaction result; applies decay first, then Bayesian update. Optionally raises `TrustCircuitOpen` when trust drops below threshold. |
 | `get_trust_score` | `(agent_a, agent_b) -> float` | Current trust score (0.0–1.0, starts at 0.5 for unknown pairs) |
 | `should_terminate` | `(agent_a, agent_b) -> bool` | True if trust score is below `config.threshold` |
 | `get_state` | `(agent_a, agent_b) -> TrustState \| None` | Raw TrustState with alpha/beta/timestamp, or None if not yet evaluated |
@@ -77,6 +78,7 @@ Dataclass holding the Beta distribution parameters for an agent pair.
 | `beta_val` | `float` | Negative evidence accumulator (default 1.0 uninformative prior) |
 | `last_updated` | `float` | Unix timestamp of last state mutation |
 | `interaction_count` | `int` | Total number of recorded interactions |
+| `circuit_state` | `str` | Circuit breaker state: `"CLOSED"`, `"OPEN"`, or `"HALF_OPEN"`. Default `"CLOSED"`. |
 
 **Property:**
 
@@ -164,6 +166,40 @@ tm = TrustManager(
 
 ---
 
+## TrustCircuitOpen
+
+Exception raised when `raise_on_break=True` and trust drops below the configured threshold after an evaluation.
+
+**Constructor:**
+
+```python
+TrustCircuitOpen(pair_id: str, trust_score: float, threshold: float)
+```
+
+**Attributes:**
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `pair_id` | `str` | Canonical pair identifier |
+| `trust_score` | `float` | Trust score at time of circuit break |
+| `threshold` | `float` | Configured threshold that was violated |
+
+**Example:**
+
+```python
+from fulcrum_trust import TrustManager, TrustOutcome, TrustCircuitOpen
+
+tm = TrustManager()
+tm.evaluate("a", "b", TrustOutcome.FAILURE)
+
+try:
+    tm.evaluate("a", "b", TrustOutcome.FAILURE, raise_on_break=True)
+except TrustCircuitOpen as exc:
+    print(f"Circuit open: {exc.pair_id} at {exc.trust_score:.3f}")
+```
+
+---
+
 ## Stores
 
 ### MemoryStore
@@ -222,6 +258,64 @@ class RedisStore:
 
 tm = TrustManager(store=RedisStore())
 ```
+
+---
+
+## BackgroundFlusher
+
+Thread-safe background flusher for trust state events. Prevents synchronous store I/O from blocking the agent's execution loop.
+
+**Constructor:**
+
+```python
+from fulcrum_trust.flusher import BackgroundFlusher
+
+flusher = BackgroundFlusher(store, flush_interval=5.0, max_batch=100)
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `store` | (required) | TrustStore to flush events into |
+| `flush_interval` | `5.0` | Seconds between automatic flushes |
+| `max_batch` | `100` | Maximum events per flush cycle |
+
+**Methods:**
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `enqueue` | `(state: TrustState) -> None` | Add event to flush queue (non-blocking) |
+| `flush` | `() -> None` | Drain queue and persist all pending events immediately |
+| `shutdown` | `() -> None` | Flush remaining events and stop background thread |
+
+**Usage with TrustManager:**
+
+```python
+from fulcrum_trust import TrustManager, TrustOutcome
+from fulcrum_trust.stores.file import FileStore
+
+# Opt-in: non-blocking persistence
+tm = TrustManager(store=FileStore("trust.json"), async_flush=True)
+tm.evaluate("orchestrator", "worker", TrustOutcome.SUCCESS)  # non-blocking write
+```
+
+---
+
+## Context Isolation
+
+ContextVar-based isolation for concurrent trust evaluations. Ensures that concurrent asyncio tasks or threads maintain independent evaluation context.
+
+```python
+from fulcrum_trust.context import get_current_context, set_trust_context, reset_trust_context
+
+token = set_trust_context("agent_a|agent_b")
+try:
+    ctx = get_current_context()
+    print(ctx.pair_id)  # "agent_a|agent_b"
+finally:
+    reset_trust_context(token)
+```
+
+This is used internally by `TrustManager.evaluate()` — you typically don't need to call these directly unless building custom adapters.
 
 ---
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from fulcrum_trust.types import TrustConfig, TrustOutcome, TrustState
+from fulcrum_trust.types import TrustCircuitOpen, TrustConfig, TrustOutcome, TrustState
 
 
 class TestTrustOutcome:
@@ -45,6 +45,14 @@ class TestTrustState:
         after = time.time()
         assert before <= state.last_updated <= after
 
+    def test_circuit_state_default_is_closed(self) -> None:
+        state = TrustState(pair_id="abc", agent_a="a", agent_b="b")
+        assert state.circuit_state == "CLOSED"
+
+    def test_circuit_state_is_string(self) -> None:
+        state = TrustState(pair_id="abc", agent_a="a", agent_b="b")
+        assert isinstance(state.circuit_state, str)
+
 
 class TestTrustConfig:
     def test_default_threshold(self) -> None:
@@ -79,3 +87,27 @@ class TestTrustConfig:
     def test_custom_threshold(self) -> None:
         cfg = TrustConfig(threshold=0.5)
         assert cfg.threshold == pytest.approx(0.5)
+
+
+class TestTrustCircuitOpen:
+    def test_is_exception_subclass(self) -> None:
+        exc = TrustCircuitOpen(pair_id="abc", trust_score=0.2, threshold=0.3)
+        assert isinstance(exc, Exception)
+
+    def test_attributes_accessible(self) -> None:
+        exc = TrustCircuitOpen(pair_id="abc", trust_score=0.2, threshold=0.3)
+        assert exc.pair_id == "abc"
+        assert exc.trust_score == pytest.approx(0.2)
+        assert exc.threshold == pytest.approx(0.3)
+
+    def test_str_contains_pair_id_score_threshold(self) -> None:
+        exc = TrustCircuitOpen(pair_id="abc", trust_score=0.2, threshold=0.3)
+        msg = str(exc)
+        assert "abc" in msg
+        assert "0.200" in msg
+        assert "0.300" in msg
+
+    def test_can_be_raised_and_caught(self) -> None:
+        with pytest.raises(TrustCircuitOpen) as exc_info:
+            raise TrustCircuitOpen(pair_id="test", trust_score=0.1, threshold=0.3)
+        assert exc_info.value.pair_id == "test"

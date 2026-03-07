@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import dataclasses
 
+from fulcrum_trust.context import reset_trust_context, set_trust_context
 from fulcrum_trust.decay import apply_decay
 from fulcrum_trust.evaluator import TrustEvaluator, make_pair_id
+from fulcrum_trust.flusher import BackgroundFlusher
 from fulcrum_trust.stores.base import TrustStore
 from fulcrum_trust.stores.memory import MemoryStore
-from fulcrum_trust.types import TrustConfig, TrustOutcome, TrustState
+from fulcrum_trust.types import TrustCircuitOpen, TrustConfig, TrustOutcome, TrustState
 
 
 class TrustManager:
@@ -18,18 +20,32 @@ class TrustManager:
     Args:
         store: Persistence layer. Defaults to MemoryStore.
         config: Trust engine configuration. Defaults to TrustConfig().
+        async_flush: If True, store writes are batched on a background thread
+            via BackgroundFlusher. Default False (synchronous writes).
     """
 
     def __init__(
         self,
         store: TrustStore | None = None,
         config: TrustConfig | None = None,
+        *,
+        async_flush: bool = False,
     ) -> None:
         self._config = config if config is not None else TrustConfig()
         self._store: TrustStore = store if store is not None else MemoryStore()
         self._evaluator = TrustEvaluator(self._config)
+        self._flusher: BackgroundFlusher | None = None
+        if async_flush:
+            self._flusher = BackgroundFlusher(self._store)
 
-    def evaluate(self, agent_a: str, agent_b: str, outcome: TrustOutcome) -> TrustState:
+    def evaluate(
+        self,
+        agent_a: str,
+        agent_b: str,
+        outcome: TrustOutcome,
+        *,
+        raise_on_break: bool = False,
+    ) -> TrustState:
         """Record outcome and return updated trust state.
 
         Applies decay first (lazy decay on read), then records new outcome.
@@ -38,19 +54,38 @@ class TrustManager:
             agent_a: First agent identifier.
             agent_b: Second agent identifier. Order does not matter.
             outcome: Interaction result (SUCCESS, FAILURE, or PARTIAL).
+            raise_on_break: If True, raises TrustCircuitOpen when trust drops
+                below the configured threshold after this evaluation.
+                Default False (backward-compatible).
 
         Returns:
             Updated TrustState after decay and Bayesian update.
+
+        Raises:
+            TrustCircuitOpen: If raise_on_break=True and trust is below threshold.
         """
         pid = make_pair_id(agent_a, agent_b)
-        state = self._store.get(pid)
-        if state is None:
-            state = self._evaluator.new_state(agent_a, agent_b)
-        else:
-            # Apply decay before recording new evidence
-            state = apply_decay(state, self._config.half_life_seconds)
-        state = self._evaluator.update(state, outcome)
-        self._store.put(pid, state)
+        token = set_trust_context(pid)
+        try:
+            state = self._store.get(pid)
+            if state is None:
+                state = self._evaluator.new_state(agent_a, agent_b)
+            else:
+                state = apply_decay(state, self._config.half_life_seconds)
+            state = self._evaluator.update(state, outcome)
+            if self._flusher is not None:
+                self._flusher.enqueue(state)
+            else:
+                self._store.put(pid, state)
+        finally:
+            reset_trust_context(token)
+
+        if raise_on_break and self._evaluator.is_below_threshold(state):
+            raise TrustCircuitOpen(
+                pair_id=pid,
+                trust_score=state.trust_score,
+                threshold=self._config.threshold,
+            )
         return state
 
     def get_trust_score(self, agent_a: str, agent_b: str) -> float:

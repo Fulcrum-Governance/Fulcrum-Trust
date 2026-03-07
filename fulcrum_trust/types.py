@@ -13,6 +13,25 @@ class TrustOutcome(str, Enum):
     PARTIAL = "partial"
 
 
+class TrustCircuitOpen(Exception):
+    """Raised when trust drops below threshold and raise_on_break=True.
+
+    Attributes:
+        pair_id: Canonical pair identifier (sorted agent IDs joined by '|').
+        trust_score: Current trust score at time of circuit break.
+        threshold: Configured threshold that was violated.
+    """
+
+    def __init__(self, pair_id: str, trust_score: float, threshold: float) -> None:
+        self.pair_id = pair_id
+        self.trust_score = trust_score
+        self.threshold = threshold
+        super().__init__(
+            f"Trust circuit open for pair '{pair_id}': "
+            f"score {trust_score:.3f} < threshold {threshold:.3f}"
+        )
+
+
 @dataclass
 class TrustState:
     """Mutable Beta(alpha, beta) trust state for an agent pair."""
@@ -24,6 +43,7 @@ class TrustState:
     beta_val: float = 1.0  # failures; prior=1.0 (uninformative)
     last_updated: float = field(default_factory=time.time)
     interaction_count: int = 0
+    circuit_state: str = "CLOSED"  # CircuitBreakerState: CLOSED | OPEN | HALF_OPEN
 
     @property
     def trust_score(self) -> float:

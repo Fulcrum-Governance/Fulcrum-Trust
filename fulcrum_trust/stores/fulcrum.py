@@ -78,4 +78,6 @@ class FulcrumStore:
             with urllib.request.urlopen(request, timeout=self._timeout_seconds):
                 return
         except (urllib.error.URLError, TimeoutError, socket.timeout, OSError) as exc:
-            self._logger.warning("FulcrumStore fallback: trust event not shipped (%s)", exc)
+            self._logger.warning(
+                "FulcrumStore fallback: trust event not shipped (%s)", exc
+            )
