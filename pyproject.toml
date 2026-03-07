@@ -33,6 +33,7 @@ numpy = ["numpy>=1.21"]
 langgraph = ["langgraph>=0.2.0,<1.0.0"]
 dev = [
     "pytest>=7.0",
+    "pytest-asyncio>=0.21",
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.1",
@@ -55,6 +56,7 @@ addopts = [
     "--cov-fail-under=95",
 ]
 testpaths = ["tests"]
+asyncio_mode = "strict"
 
 # Coverage: exclude adapters (lower 90% threshold) and boilerplate lines
 [tool.coverage.run]
@@ -90,6 +92,10 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "langchain_core.*"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "_pytest.*"
+follow_imports = "skip"
 
 # Ruff: lint + format, targeting Python 3.9
 [tool.ruff]
