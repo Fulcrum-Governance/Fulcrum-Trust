@@ -352,9 +352,12 @@ class TrustAwareGraph:
                     from langchain_core.runnables import RunnableLambda
 
                     new_runnable = RunnableLambda(wrapped)
-                # StateNodeSpec is a NamedTuple; _replace() creates a new instance.
-                new_spec = spec._replace(runnable=new_runnable)
-                graph.nodes[name] = new_spec
+                # StateNodeSpec: NamedTuple in langgraph 0.2-0.4 (_replace),
+                # dataclass in langgraph 0.6+ (direct assignment).
+                try:
+                    graph.nodes[name] = spec._replace(runnable=new_runnable)
+                except AttributeError:
+                    spec.runnable = new_runnable
             elif original_afn is not None:
                 # Async node (LangGraph 0.4.x): afunc holds the coroutine function;
                 # func is None. Wrap afunc and pass None as the sync func so LangGraph
@@ -368,8 +371,10 @@ class TrustAwareGraph:
                     from langchain_core.runnables import RunnableLambda
 
                     new_runnable = RunnableLambda(wrapped_async)
-                new_spec = spec._replace(runnable=new_runnable)
-                graph.nodes[name] = new_spec
+                try:
+                    graph.nodes[name] = spec._replace(runnable=new_runnable)
+                except AttributeError:
+                    spec.runnable = new_runnable
             elif callable(spec):  # pragma: no cover
                 # Direct callable layout (rare, future-proofing).
                 graph.nodes[name] = self._make_node_wrapper(spec)
