@@ -100,6 +100,16 @@ Assign ownership explicitly:
 - **Type strictness**: Tester validates — `mypy --strict` must pass on all new code
 - **Lint cleanliness**: Tester validates — `ruff check .` must pass
 
+### Contract Quality Checklist
+
+Before including a contract in agent prompts, verify:
+- Are class signatures exact (parameter names, types, defaults)?
+- Are exception conditions documented (when does `TrustCircuitOpen` fire)?
+- Are new parameter defaults specified (what happens when omitted)?
+- Are file ownership boundaries explicit (who touches `manager.py` in which wave)?
+- Are test coverage thresholds stated per module?
+- Are concurrent behavior expectations documented (what must `asyncio.gather()` tests prove)?
+
 ## Step 5: Spawn All Agents in Parallel
 
 With contracts defined, spawn all agents simultaneously. Enter **Delegate Mode** (Shift+Tab) before spawning. You should NOT implement code yourself — your role is coordination.
@@ -137,6 +147,13 @@ You are the [ROLE] agent for this Fulcrum build.
 - No third-party dependencies beyond Python stdlib
 - Type hints on all public APIs (mypy strict)
 - Do NOT modify files outside your ownership scope
+
+## Coordination
+- Message the lead if you discover something that affects a contract
+- Ask before deviating from any agreed contract
+- Flag cross-cutting concerns that weren't anticipated
+- Share with [other agent] when: [trigger — e.g., "when new public method is added"]
+- Challenge [other agent]'s work on: [integration point — e.g., "import paths match"]
 
 ## Before Reporting Done
 Run these validations and fix any failures:
@@ -199,10 +216,23 @@ Lead spawns implementer → waits → spawns tester → waits → spawns documen
 Only one agent works at a time ❌
 ```
 
+**Anti-pattern: "Tell them to talk"** (they won't reliably)
+```
+Lead tells implementer "share your API surface with tester when done"
+Implementer sends contract but tester already wrote half the tests to wrong signatures ❌
+```
+
 **Good pattern: Lead-authored contracts, parallel spawn**
 ```
 Lead reads plan → defines all contracts upfront → spawns all agents with contracts
 All agents build simultaneously to agreed interfaces ✅
+```
+
+**Good pattern: Active collaboration during parallel work**
+```
+Implementer: "I need to add a metadata dict to TrustCircuitOpen — messaging the lead"
+Lead: "Approved. Tester, TrustCircuitOpen now has an optional metadata attribute. Update your assertions."
+Tester: "Got it, adding metadata test coverage now" ✅
 ```
 
 **Good pattern: Wave-gated parallelism**
