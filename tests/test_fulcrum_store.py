@@ -36,11 +36,15 @@ def test_satisfies_trust_store_protocol() -> None:
     assert isinstance(store, TrustStore)
 
 
-def test_put_writes_local_state_even_when_remote_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_put_writes_local_state_even_when_remote_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def _raise_urlerror(*_args: Any, **_kwargs: Any) -> _DummyResponse:
         raise urllib.error.URLError("backend unavailable")
 
-    monkeypatch.setattr("fulcrum_trust.stores.fulcrum.urllib.request.urlopen", _raise_urlerror)
+    monkeypatch.setattr(
+        "fulcrum_trust.stores.fulcrum.urllib.request.urlopen", _raise_urlerror
+    )
 
     store = FulcrumStore(api_key="test-key", base_url="http://localhost:3000")
     state = _make_state()
@@ -54,7 +58,9 @@ def test_put_writes_local_state_even_when_remote_unavailable(monkeypatch: pytest
     assert persisted.trust_score == pytest.approx(state.trust_score)
 
 
-def test_put_posts_expected_endpoint_headers_and_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_put_posts_expected_endpoint_headers_and_payload(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     captured: dict[str, Any] = {}
 
     def _capture(request: Any, timeout: float) -> _DummyResponse:
@@ -96,7 +102,9 @@ def test_put_posts_expected_endpoint_headers_and_payload(monkeypatch: pytest.Mon
     ],
 )
 def test_put_never_raises_on_connectivity_failures(
-    monkeypatch: pytest.MonkeyPatch, exc: BaseException, caplog: pytest.LogCaptureFixture
+    monkeypatch: pytest.MonkeyPatch,
+    exc: BaseException,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     def _raise(*_args: Any, **_kwargs: Any) -> _DummyResponse:
         raise exc

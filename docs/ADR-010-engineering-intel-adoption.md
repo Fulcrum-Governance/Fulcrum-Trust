@@ -1,6 +1,6 @@
 # ADR-010: Adopt Selected Engineering Patterns from Ecosystem Intelligence Audit
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** March 5, 2026
 **Decision Makers:** Tony Diefenbach (Founder)
 **Applies To:** fulcrum-trust (D1), fulcrum-io (D2)

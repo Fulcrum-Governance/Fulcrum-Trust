@@ -79,6 +79,11 @@ pip install "fulcrum-trust[numpy]"
 - [API Reference](docs/api-reference.md) — all public classes and methods
 - [Blog post](docs/blog-trust-circuit-breaker.md) — why agents need circuit breakers
 
+## Support
+
+- Email: [agent@fulcrumlayer.io](mailto:agent@fulcrumlayer.io)
+- Discord: invite link pending final channel URL (tracked in Fulcrum SHIP-03)
+
 ## Development
 
 ```bash
@@ -95,10 +100,12 @@ ruff format .       # Format
 
 ```
 fulcrum_trust/
-├── types.py        — TrustOutcome enum, TrustState, TrustConfig dataclasses
+├── types.py        — TrustOutcome enum, TrustState, TrustConfig, TrustCircuitOpen
 ├── evaluator.py    — TrustEvaluator: Beta(α,β) scoring, pair_id generation
 ├── decay.py        — Exponential decay toward uninformative prior
 ├── manager.py      — TrustManager: orchestrates evaluator + store + decay
+├── context.py      — ContextVar isolation for concurrent evaluations
+├── flusher.py      — Background telemetry batching (non-blocking store writes)
 └── stores/
     ├── base.py     — TrustStore Protocol (structural subtyping)
     ├── memory.py   — MemoryStore (default, in-process)
