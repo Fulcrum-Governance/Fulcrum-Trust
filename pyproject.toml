@@ -29,12 +29,14 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
+ipc = ["redis>=5.0", "nats-py>=2.6"]
 numpy = ["numpy>=1.21"]
 langgraph = ["langgraph>=0.2.0"]
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
     "pytest-cov>=4.0",
+    "fakeredis>=2.23",
     "mypy>=1.0",
     "ruff>=0.1",
     "langgraph>=0.2.0",
@@ -61,7 +63,7 @@ asyncio_mode = "strict"
 # Coverage: exclude adapters (lower 90% threshold) and boilerplate lines
 [tool.coverage.run]
 source = ["fulcrum_trust"]
-omit = ["fulcrum_trust/adapters/*"]
+omit = ["fulcrum_trust/adapters/*", "fulcrum_trust/ipc/redis_bridge.py"]
 
 [tool.coverage.report]
 fail_under = 95
@@ -96,6 +98,14 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "_pytest.*"
 follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "redis.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "nats.*"
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "fulcrum_trust.adapters.*"

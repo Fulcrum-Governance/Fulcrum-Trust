@@ -10,7 +10,7 @@ Part of the Fulcrum AOS (Agentic Operating System) ecosystem.
 pip install -e ".[dev]"     # Install with dev dependencies
 pytest                       # Run tests
 pytest --cov                 # Run with coverage
-mypy src/                    # Type checking (strict mode)
+mypy fulcrum_trust/ --ignore-missing-imports  # Type checking (CI flags)
 ruff check .                 # Lint
 ruff format .                # Format
 
@@ -28,6 +28,7 @@ fulcrum_trust/
 ├── evaluator.py             # TrustEvaluator — Beta(α,β) trust scoring
 ├── manager.py               # TrustManager — orchestrates evaluation + storage + decay
 ├── decay.py                 # Time-weighted exponential decay
+├── rlm/                     # Phase 5 long-context prototype (handles, runtime, benchmark)
 ├── stores/
 │   ├── __init__.py
 │   ├── base.py              # Abstract TrustStore interface

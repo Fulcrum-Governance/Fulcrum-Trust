@@ -6,6 +6,11 @@ from fulcrum_trust.context import reset_trust_context, set_trust_context
 from fulcrum_trust.decay import apply_decay
 from fulcrum_trust.evaluator import TrustEvaluator, make_pair_id
 from fulcrum_trust.flusher import BackgroundFlusher
+from fulcrum_trust.ipc.bridge import (
+    IPCBridge,
+    NullBridge,
+    circuit_state_from_str,
+)
 from fulcrum_trust.stores.base import TrustStore
 from fulcrum_trust.stores.memory import MemoryStore
 from fulcrum_trust.types import TrustCircuitOpen, TrustConfig, TrustOutcome, TrustState
@@ -22,6 +27,10 @@ class TrustManager:
         config: Trust engine configuration. Defaults to TrustConfig().
         async_flush: If True, store writes are batched on a background thread
             via BackgroundFlusher. Default False (synchronous writes).
+        ipc_bridge: Optional IPC bridge for cross-process state sync.
+            When provided, circuit state transitions are published to
+            Redis/NATS for the Go Execution Envelope to consume.
+            Defaults to NullBridge (no-op).
     """
 
     def __init__(
@@ -30,10 +39,12 @@ class TrustManager:
         config: TrustConfig | None = None,
         *,
         async_flush: bool = False,
+        ipc_bridge: IPCBridge | None = None,
     ) -> None:
         self._config = config if config is not None else TrustConfig()
         self._store: TrustStore = store if store is not None else MemoryStore()
         self._evaluator = TrustEvaluator(self._config)
+        self._ipc: IPCBridge = ipc_bridge if ipc_bridge is not None else NullBridge()
         self._flusher: BackgroundFlusher | None = None
         if async_flush:
             self._flusher = BackgroundFlusher(self._store)
@@ -77,6 +88,32 @@ class TrustManager:
                 self._flusher.enqueue(state)
             else:
                 self._store.put(pid, state)
+
+            # --- IPC circuit state transition ---
+            below = self._evaluator.is_below_threshold(state)
+            old_cs = state.circuit_state
+            if below and old_cs == "CLOSED":
+                new_cs = "OPEN"
+            elif not below and old_cs in ("OPEN", "HALF_OPEN"):
+                new_cs = "CLOSED"
+            else:
+                new_cs = old_cs
+
+            if new_cs != old_cs:
+                state.circuit_state = new_cs
+                ipc_state = circuit_state_from_str(new_cs)
+                self._ipc.publish_state(
+                    agent_a,
+                    ipc_state,
+                    trust_score=state.trust_score,
+                    pair_id=pid,
+                )
+                self._ipc.publish_state(
+                    agent_b,
+                    ipc_state,
+                    trust_score=state.trust_score,
+                    pair_id=pid,
+                )
         finally:
             reset_trust_context(token)
 
