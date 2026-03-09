@@ -3,6 +3,7 @@ from __future__ import annotations
 from fulcrum_trust.ipc.bridge import CircuitState, IPCBridge, NullBridge
 from fulcrum_trust.ipc.redis_bridge import RedisIPCBridge
 from fulcrum_trust.manager import TrustManager
+from fulcrum_trust.rlm import ContextExhausted, RecallBenchmarkResult, RLMPrototype
 from fulcrum_trust.stores.file import FileStore
 from fulcrum_trust.stores.fulcrum import FulcrumStore
 from fulcrum_trust.stores.memory import MemoryStore
@@ -12,12 +13,15 @@ __version__ = "0.1.0"
 
 __all__ = [
     "CircuitState",
+    "ContextExhausted",
     "FileStore",
     "FulcrumStore",
     "IPCBridge",
     "MemoryStore",
     "NullBridge",
     "RedisIPCBridge",
+    "RLMPrototype",
+    "RecallBenchmarkResult",
     "TrustCircuitOpen",
     "TrustConfig",
     "TrustManager",

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `fulcrum_trust.rlm`: Phase 5 RLM Python prototype for governed long-context navigation
+  - `externalize_context()` partitions 100K+ token histories into symbolic handles with a hard 128k token ceiling
+  - `RLMRuntime` exposes restricted `peek` and `llm_batch` primitives for generated navigation programs
+  - `RLMPrototype` detects planted gratitude-loop signatures hidden in the middle 80% of long sessions and emits a read → analyze → report trace
+  - `StandardRecallBaseline` provides a deterministic head-tail baseline for lost-in-the-middle benchmarking
+  - benchmark result: prototype recall `1.0` vs baseline `0.0` across five middle-position fixtures
+
 - `TrustCircuitOpen` exception: raised when `raise_on_break=True` and trust
   drops below threshold after an evaluation (P-02, ADR-010)
 - `BackgroundFlusher`: thread-safe background batching for trust state events,

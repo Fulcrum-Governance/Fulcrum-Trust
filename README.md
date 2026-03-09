@@ -78,6 +78,7 @@ pip install "fulcrum-trust[numpy]"
 
 - [API Reference](docs/api-reference.md) — all public classes and methods
 - [Blog post](docs/blog-trust-circuit-breaker.md) — why agents need circuit breakers
+- [RLM Python Prototype](docs/rlm-python-prototype.md) — Phase 5 long-context navigation benchmark and architecture
 
 ## Support
 
@@ -106,6 +107,11 @@ fulcrum_trust/
 ├── manager.py      — TrustManager: orchestrates evaluator + store + decay
 ├── context.py      — ContextVar isolation for concurrent evaluations
 ├── flusher.py      — Background telemetry batching (non-blocking store writes)
+├── rlm/
+│   ├── context.py  — 128k-bounded long-context externalization into symbolic handles
+│   ├── runtime.py  — Restricted `peek` + `llm_batch` navigation runtime
+│   ├── prototype.py — Gratitude-loop analysis + lost-in-the-middle benchmark
+│   └── fixtures.py — Deterministic 100K+ token synthetic session generator
 └── stores/
     ├── base.py     — TrustStore Protocol (structural subtyping)
     ├── memory.py   — MemoryStore (default, in-process)

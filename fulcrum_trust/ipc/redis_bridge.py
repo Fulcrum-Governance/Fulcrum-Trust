@@ -48,9 +48,7 @@ class RedisIPCBridge:
                 "Install with: pip install fulcrum-trust[ipc]"
             ) from exc
 
-        self._redis: Any = redis_lib.Redis.from_url(
-            redis_url, decode_responses=True
-        )
+        self._redis: Any = redis_lib.Redis.from_url(redis_url, decode_responses=True)
         self._ttl = ttl_seconds
         self._nats_url = nats_url
         self._nats_client: Any = None
@@ -61,7 +59,7 @@ class RedisIPCBridge:
     def _init_nats(self, nats_url: str) -> None:
         """Best-effort NATS connection. Failures are logged, not raised."""
         try:
-            import nats.aio.client as nats_client_mod  # noqa: F811
+            import nats.aio.client  # noqa: F401
 
             # NATS py is async — we use a sync wrapper for simplicity
             # in the trust manager's synchronous evaluate() path.
@@ -140,14 +138,12 @@ class RedisIPCBridge:
         if not self._nats_url:
             return
         try:
-            from nats.aio.client import Client as NATSClient
-
             # For sync usage we'll use a simple socket-level publish.
             # nats-py is async-first. For the synchronous TrustManager path,
             # we use a lightweight approach: direct socket publishing.
             # This avoids requiring an event loop in the caller.
-            import socket
             import re
+            import socket
 
             parsed = re.match(r"nats://([^:]+):(\d+)", self._nats_url)
             if not parsed:

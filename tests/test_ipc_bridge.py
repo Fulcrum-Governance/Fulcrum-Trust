@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Tuple
-from unittest.mock import patch
-
 import fakeredis
 import pytest
 
@@ -24,7 +21,7 @@ class RecordingBridge:
     """In-memory bridge that records publish_state calls."""
 
     def __init__(self) -> None:
-        self.calls: List[Tuple[str, CircuitState, float, str]] = []
+        self.calls: list[tuple[str, CircuitState, float, str]] = []
 
     def publish_state(
         self,
@@ -171,9 +168,7 @@ class TestManagerCircuitTransitionClosedToOpen:
         tm.evaluate("agent-a", "agent-b", TrustOutcome.FAILURE)
 
         # Should have published ISOLATED for both agents.
-        isolated_calls = [
-            c for c in bridge.calls if c[1] == CircuitState.ISOLATED
-        ]
+        isolated_calls = [c for c in bridge.calls if c[1] == CircuitState.ISOLATED]
         agent_ids = {c[0] for c in isolated_calls}
         assert "agent-a" in agent_ids, f"agent-a not in isolated calls: {bridge.calls}"
         assert "agent-b" in agent_ids, f"agent-b not in isolated calls: {bridge.calls}"
@@ -199,9 +194,7 @@ class TestManagerCircuitTransitionOpenToClosed:
         tm.evaluate("a", "b", TrustOutcome.SUCCESS)
         tm.evaluate("a", "b", TrustOutcome.SUCCESS)
 
-        trusted_calls = [
-            c for c in bridge.calls if c[1] == CircuitState.TRUSTED
-        ]
+        trusted_calls = [c for c in bridge.calls if c[1] == CircuitState.TRUSTED]
         agent_ids = {c[0] for c in trusted_calls}
         assert "a" in agent_ids, f"agent 'a' not in trusted calls: {bridge.calls}"
         assert "b" in agent_ids, f"agent 'b' not in trusted calls: {bridge.calls}"

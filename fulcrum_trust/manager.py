@@ -7,7 +7,6 @@ from fulcrum_trust.decay import apply_decay
 from fulcrum_trust.evaluator import TrustEvaluator, make_pair_id
 from fulcrum_trust.flusher import BackgroundFlusher
 from fulcrum_trust.ipc.bridge import (
-    CircuitState,
     IPCBridge,
     NullBridge,
     circuit_state_from_str,
