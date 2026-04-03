@@ -97,6 +97,20 @@ ruff check .        # Lint
 ruff format .       # Format
 ```
 
+## Relationship to Fulcrum
+
+`fulcrum-trust` is one of three repositories in the Fulcrum ecosystem:
+
+| Repo | Role | License |
+|------|------|---------|
+| **[Fulcrum](https://github.com/Fulcrum-Governance/fulcrum-io)** | Runtime control plane: gRPC/REST, MCP proxy, CLI, dashboard, SDKs | BSL 1.1 |
+| **fulcrum-trust** (this repo) | Trust model math: Beta distribution evaluator, decay, adapter library | Apache 2.0 |
+| **[Fulcrum-Proofs](https://github.com/Fulcrum-Governance/Fulcrum-Proofs)** | Claim ledger, formal proofs (Lean 4), evidence artifacts | Private |
+
+`FulcrumStore` bridges this package to the main Fulcrum backend — trust events flow to the dashboard via `POST /api/trust/events`. The Go backend has parity tests ensuring its trust implementation matches this Python package's behavior exactly.
+
+See [ADR-003](https://github.com/Fulcrum-Governance/fulcrum-io/blob/main/product/ADRs/003-three-repo-architecture.md) for the three-repo architecture rationale.
+
 ## Architecture
 
 ```
