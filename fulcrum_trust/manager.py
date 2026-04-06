@@ -125,6 +125,35 @@ class TrustManager:
             )
         return state
 
+    def terminate(self, agent_a: str, agent_b: str) -> None:
+        """Administrative kill switch: permanently terminate an agent pair.
+
+        Unlike trust-pipeline transitions (CLOSED->OPEN->HALF_OPEN->CLOSED),
+        TERMINATED is an administrative override that bypasses the trust math.
+        The pair cannot recover without explicit reset.
+
+        This is the "hard kill" -- use when an operator needs to immediately
+        and permanently stop an agent pair regardless of trust score.
+        """
+        pid = make_pair_id(agent_a, agent_b)
+        state = self._store.get(pid)
+        if state is None:
+            state = self._evaluator.new_state(agent_a, agent_b)
+        state.circuit_state = "TERMINATED"
+        self._store.put(pid, state)
+        self._ipc.publish_state(
+            agent_a,
+            circuit_state_from_str("TERMINATED"),
+            trust_score=state.trust_score,
+            pair_id=pid,
+        )
+        self._ipc.publish_state(
+            agent_b,
+            circuit_state_from_str("TERMINATED"),
+            trust_score=state.trust_score,
+            pair_id=pid,
+        )
+
     def get_trust_score(self, agent_a: str, agent_b: str) -> float:
         """Return current trust score (0.5 for unknown pairs).
 

@@ -9,12 +9,17 @@ class CircuitState(IntEnum):
 
     Values match the Go-side constants in internal/trust/ipc_bridge.go.
     Key schema: agent:{id}:circuit_state
+
+    Four-state model:
+    - TRUSTED/EVALUATING/ISOLATED are managed by the trust pipeline (Bayesian evaluation).
+    - TERMINATED is an administrative override — set by operator via TrustManager.terminate(),
+      not by the trust pipeline. Pair cannot recover without explicit reset.
     """
 
-    TRUSTED = 0
-    EVALUATING = 1
-    ISOLATED = 2
-    TERMINATED = 3
+    TRUSTED = 0       # CLOSED — normal operation
+    EVALUATING = 1    # HALF_OPEN — recovery probe after cooldown
+    ISOLATED = 2      # OPEN — trust below threshold
+    TERMINATED = 3    # Administrative kill switch — set by operator, not by trust pipeline
 
 
 # Mapping from TrustState.circuit_state string to CircuitState int.
