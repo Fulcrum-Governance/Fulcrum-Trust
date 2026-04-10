@@ -18,6 +18,12 @@ class FulcrumStore:
 
     Local reads always come from in-process memory. Writes persist locally first, then
     best-effort POST to `/api/trust/events` with `X-API-Key` auth.
+
+    NOTE: The REST path (`/api/trust/events`) is DEFERRED — fulcrum-io does not currently
+    expose this endpoint. The canonical cross-process integration is the Redis IPC bridge
+    (`fulcrum_trust.ipc.redis_bridge.RedisIPCBridge`), which writes circuit state to Redis
+    for O(1) reads by the Go Execution Envelope. This store's REST POST fails gracefully
+    (best-effort with warning log) and does not affect local state correctness.
     """
 
     def __init__(
