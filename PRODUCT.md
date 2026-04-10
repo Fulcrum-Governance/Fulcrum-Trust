@@ -1,4 +1,4 @@
-<!-- product-bible | version: 1.0.0 | last-updated: 2026-02-22 -->
+<!-- product-bible | version: 1.1.0 | last-updated: 2026-04-09 -->
 
 # Product Definition
 
@@ -13,7 +13,9 @@ The canonical product bible for the Fulcrum project (spanning all three repos) l
 - Exponential decay model (`fulcrum_trust/decay.py`)
 - Trust circuit breaker logic (`fulcrum_trust/manager.py`)
 - LangGraph adapter (`fulcrum_trust/adapters/langgraph.py`)
-- Store abstractions: MemoryStore, FileStore, FulcrumStore (Intent)
+- Store abstractions: MemoryStore, FileStore, FulcrumStore (Redis IPC canonical, REST deferred)
+- IPC bridge (`fulcrum_trust/ipc/`) — Redis-backed cross-process trust state sync
+- RLM prototype (`fulcrum_trust/rlm/`) — Recursive context engine Python implementation
 
 This package is independently installable (`pip install fulcrum-trust`) under Apache 2.0.
 It does not require the Fulcrum backend to function.
