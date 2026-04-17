@@ -1,6 +1,6 @@
 # fulcrum-trust
 
-Trust-based circuit breaking for multi-agent AI systems.
+The trust engine of the Fulcrum governance kernel. Trust-based circuit breaking for multi-agent AI systems.
 
 [![CI](https://github.com/Fulcrum-Governance/fulcrum-trust/actions/workflows/ci.yml/badge.svg)](https://github.com/Fulcrum-Governance/fulcrum-trust/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/fulcrum-trust)](https://pypi.org/project/fulcrum-trust/)
@@ -97,19 +97,20 @@ ruff check .        # Lint
 ruff format .       # Format
 ```
 
-## Relationship to Fulcrum
+## Relationship to the Fulcrum Governance Kernel
 
-`fulcrum-trust` is one of three repositories in the Fulcrum ecosystem:
+`fulcrum-trust` is one of four repositories that make up the Fulcrum governance kernel — a portable, typed, pre-execution control plane that sits between intent and action:
 
 | Repo | Role | License |
 |------|------|---------|
-| **[Fulcrum](https://github.com/Fulcrum-Governance/fulcrum-io)** | Runtime control plane: gRPC/REST, MCP proxy, CLI, dashboard, SDKs | BSL 1.1 |
-| **fulcrum-trust** (this repo) | Trust model math: Beta distribution evaluator, decay, adapter library | Apache 2.0 |
-| **[Fulcrum-Proofs](https://github.com/Fulcrum-Governance/Fulcrum-Proofs)** | Claim ledger, formal proofs (Lean 4), evidence artifacts | Private |
+| **[fulcrum-io](https://github.com/Fulcrum-Governance/fulcrum-io)** | Runtime control plane: gRPC/REST, MCP proxy, CLI, dashboard, SDKs | BSL 1.1 |
+| **[governance-interception-layer](https://github.com/Fulcrum-Governance/governance-interception-layer)** | Out-of-process enforcement boundary: transport adapters, 4-stage pipeline | Apache 2.0 |
+| **fulcrum-trust** (this repo) | Trust engine: Beta(α,β) evaluator, circuit breaker, LangGraph adapter | Apache 2.0 |
+| **[Fulcrum-Proofs](https://github.com/Fulcrum-Governance/Fulcrum-Proofs)** | Formal core: Lean 4 proofs, claim ledger, evidence artifacts | Private |
 
 `FulcrumStore` bridges this package to the main Fulcrum backend — trust events flow to the dashboard via `POST /api/trust/events`. The Go backend has parity tests ensuring its trust implementation matches this Python package's behavior exactly.
 
-See [ADR-003](https://github.com/Fulcrum-Governance/fulcrum-io/blob/main/product/ADRs/003-three-repo-architecture.md) for the three-repo architecture rationale.
+See [ADR-003](https://github.com/Fulcrum-Governance/fulcrum-io/blob/main/product/ADRs/003-three-repo-architecture.md) for the original repo-architecture rationale; the `governance-interception-layer` repo was added in April 2026 when GIL shipped as the out-of-process enforcement boundary.
 
 ## Architecture
 
