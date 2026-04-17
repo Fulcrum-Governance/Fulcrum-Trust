@@ -2,7 +2,7 @@
 
 ## Project Overview
 Trust-based circuit breaking for multi-agent AI systems. Pure Python package, Apache 2.0.
-Part of the Fulcrum AOS (Agentic Operating System) ecosystem.
+Part of the Fulcrum governance-kernel ecosystem.
 
 ## Commands
 ```bash
