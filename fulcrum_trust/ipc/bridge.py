@@ -16,10 +16,12 @@ class CircuitState(IntEnum):
       not by the trust pipeline. Pair cannot recover without explicit reset.
     """
 
-    TRUSTED = 0       # CLOSED — normal operation
-    EVALUATING = 1    # HALF_OPEN — recovery probe after cooldown
-    ISOLATED = 2      # OPEN — trust below threshold
-    TERMINATED = 3    # Administrative kill switch — set by operator, not by trust pipeline
+    TRUSTED = 0  # CLOSED — normal operation
+    EVALUATING = 1  # HALF_OPEN — recovery probe after cooldown
+    ISOLATED = 2  # OPEN — trust below threshold
+    TERMINATED = (
+        3  # Administrative kill switch — set by operator, not by trust pipeline
+    )
 
 
 # Mapping from TrustState.circuit_state string to CircuitState int.

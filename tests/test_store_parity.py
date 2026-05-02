@@ -3,6 +3,7 @@
 Run a single test matrix against MemoryStore and FulcrumStore to prove
 they are interchangeable on the TrustStore protocol.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -46,7 +47,9 @@ def _fulcrum_factory(monkeypatch: pytest.MonkeyPatch) -> FulcrumStore:
 
 
 @pytest.fixture(params=["memory", "fulcrum"], ids=["MemoryStore", "FulcrumStore"])
-def store(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> TrustStore:
+def store(
+    request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
+) -> TrustStore:
     if request.param == "memory":
         return _memory_factory()
     return _fulcrum_factory(monkeypatch)
