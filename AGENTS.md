@@ -27,7 +27,7 @@ This is one of four repositories under the `Fulcrum-Governance` GitHub org.
 
 ```bash
 pip install -e ".[dev]"     # Install with dev dependencies
-pytest                       # Run all tests (186 tests, ~97% coverage)
+pytest                       # Run all tests (186 tests, 95.65% coverage at v0.2.0 — see CHANGELOG)
 pytest --cov=fulcrum_trust   # With coverage report
 ruff check .                 # Lint
 ruff format .                # Format
