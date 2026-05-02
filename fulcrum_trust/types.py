@@ -43,7 +43,9 @@ class TrustState:
     beta_val: float = 1.0  # failures; prior=1.0 (uninformative)
     last_updated: float = field(default_factory=time.time)
     interaction_count: int = 0
-    circuit_state: str = "CLOSED"  # CircuitBreakerState: CLOSED | OPEN | HALF_OPEN | TERMINATED
+    circuit_state: str = (
+        "CLOSED"  # CircuitBreakerState: CLOSED | OPEN | HALF_OPEN | TERMINATED
+    )
 
     @property
     def trust_score(self) -> float:
