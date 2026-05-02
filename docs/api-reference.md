@@ -22,12 +22,19 @@ The primary interface. Orchestrates trust evaluation, storage, and decay.
 **Constructor:**
 
 ```python
-TrustManager(store=None, config=None, *, async_flush=False)
+TrustManager(
+    store=None,
+    config=None,
+    *,
+    async_flush=False,
+    ipc_bridge=None,
+)
 ```
 
 - `store` — A `TrustStore` instance. Defaults to `MemoryStore()`.
 - `config` — A `TrustConfig` instance. Defaults to `TrustConfig()`.
 - `async_flush` — When `True`, routes store writes through a `BackgroundFlusher` for non-blocking persistence. Default `False`.
+- `ipc_bridge` — Optional `IPCBridge` for cross-process circuit-state sync. When provided, circuit transitions are published to Redis/NATS for the Go Execution Envelope to consume. Defaults to `NullBridge()` (no-op). See [IPC Bridge](#ipc-bridge) below.
 
 **Key methods:**
 
@@ -38,6 +45,7 @@ TrustManager(store=None, config=None, *, async_flush=False)
 | `should_terminate` | `(agent_a, agent_b) -> bool` | True if trust score is below `config.threshold` |
 | `get_state` | `(agent_a, agent_b) -> TrustState \| None` | Raw TrustState with alpha/beta/timestamp, or None if not yet evaluated |
 | `reset` | `(agent_a, agent_b) -> None` | Remove trust history; pair reverts to uninformative prior (0.5) |
+| `terminate` | `(agent_a, agent_b) -> None` | Administrative kill switch — permanently terminate a pair. Sets circuit state to `TERMINATED` (cannot recover without explicit reset) and publishes the transition over the IPC bridge. Set by an operator, not by the automatic trust pipeline. |
 
 **Agent pair ordering:** `("orchestrator", "worker")` and `("worker", "orchestrator")` refer to the same pair. Order does not matter.
 
@@ -316,6 +324,91 @@ finally:
 ```
 
 This is used internally by `TrustManager.evaluate()` — you typically don't need to call these directly unless building custom adapters.
+
+---
+
+## IPC Bridge
+
+The IPC bridge publishes circuit-breaker state transitions to a shared store so an out-of-process consumer (e.g., the Go Execution Envelope) can enforce trust decisions at O(1) cost. All implementations satisfy the `IPCBridge` Protocol from `fulcrum_trust.ipc.bridge`.
+
+### CircuitState
+
+```python
+from fulcrum_trust import CircuitState
+```
+
+`IntEnum` defining the four-state Redis-serialized circuit model. Values match the Go-side constants in `internal/trust/ipc_bridge.go`. Key schema: `agent:{id}:circuit_state`.
+
+| Member | Value | TrustState string | Meaning |
+|--------|-------|-------------------|---------|
+| `CircuitState.TRUSTED` | `0` | `"CLOSED"` | Normal operation. |
+| `CircuitState.EVALUATING` | `1` | `"HALF_OPEN"` | Recovery probe after cooldown. **Reserved for an external operator API or a future cooldown-gated probe** — not entered automatically by `TrustManager.evaluate()`. See `manager.py` IPC transition comment. |
+| `CircuitState.ISOLATED` | `2` | `"OPEN"` | Trust below threshold. |
+| `CircuitState.TERMINATED` | `3` | `"TERMINATED"` | Administrative kill switch (set by `TrustManager.terminate()`, not by the trust pipeline). Cannot recover without an explicit reset. |
+
+### IPCBridge (Protocol)
+
+```python
+from fulcrum_trust import IPCBridge
+```
+
+Runtime-checkable Protocol that any IPC bridge implementation must satisfy:
+
+```python
+def publish_state(
+    self,
+    agent_id: str,
+    state: CircuitState,
+    *,
+    trust_score: float = 0.0,
+    pair_id: str = "",
+) -> None: ...
+```
+
+### NullBridge
+
+```python
+from fulcrum_trust import NullBridge
+```
+
+No-op bridge used as the default when `TrustManager(ipc_bridge=...)` is not provided. `publish_state()` discards every event. Use when running fully in-process with no external consumer of circuit state.
+
+### RedisIPCBridge
+
+```python
+from fulcrum_trust import RedisIPCBridge
+```
+
+Redis-backed bridge. Publishes circuit-state transitions under `agent:{id}:circuit_state` for the Go Execution Envelope to read. Constructor accepts a Redis client/URL and key-namespace options; see `fulcrum_trust/ipc/redis_bridge.py` for the full signature. Pair this with `TrustManager` to expose Python-side trust decisions to a Go runtime.
+
+```python
+from fulcrum_trust import TrustManager, RedisIPCBridge
+
+bridge = RedisIPCBridge(redis_url="redis://localhost:6379/0")
+tm = TrustManager(ipc_bridge=bridge)
+```
+
+---
+
+## RLM Prototype
+
+```python
+from fulcrum_trust import RLMPrototype, ContextExhausted, RecallBenchmarkResult
+```
+
+Long-context navigation prototype (Phase 5) — a relationship-history-driven memory layer that recalls past agent-pair interactions inside a bounded context budget. See `docs/rlm-python-prototype.md` for architecture and benchmark methodology.
+
+### RLMPrototype
+
+Primary entry point for context-budgeted recall against a stored interaction history.
+
+### ContextExhausted
+
+Exception raised when the recall query cannot fit relevant history into the configured context budget.
+
+### RecallBenchmarkResult
+
+Dataclass returned by the benchmark harness summarizing recall accuracy, latency, and budget utilization across the test corpus.
 
 ---
 

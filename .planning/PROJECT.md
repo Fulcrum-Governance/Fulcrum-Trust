@@ -94,6 +94,28 @@ Properties:
 
 Full spec: `fulcrum-io/.claude/aos/research/TRUST_MODEL_SPEC.md`
 
+### Formal Validation — Lean 4 Proof Backing
+
+The "formally validated" / "formally validated with convergence guarantees"
+language above (and elsewhere in this document) is backed by the Lean 4
+trust-termination theorems in the `Fulcrum-Proofs` repository. The
+authoritative proof-to-implementation mapping lives at:
+
+- `Fulcrum-Proofs/proofs/lean/Proofs/TrustTermination.lean` — Lean source
+  for the Beta(α, β) termination guarantees.
+- `Fulcrum-Proofs/README.md` § "Trust Termination Proofs" — the theorem
+  inventory (`trust_monotone_decreasing`, `trust_failure_degrades`,
+  `trust_threshold_reachable`, `trust_termination_invariant`,
+  `trust_safety_invariant`, `trust_cumulative_degradation`,
+  `trust_guaranteed_termination`, …).
+- `fulcrum-io/docs/formal-verification/CORRESPONDENCE.md` — narrative
+  proof-to-runtime cross-walk (manually maintained; the canonical
+  machine-readable closure manifest is
+  `Fulcrum-Proofs/claims/claim_closure.yaml`).
+
+Without that cross-reference, public readers cannot verify the
+"formally validated" claim. Closes contradiction-ledger F-032.
+
 ## Tech Stack
 
 | Component | Technology |
