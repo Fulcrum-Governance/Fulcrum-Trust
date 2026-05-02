@@ -230,7 +230,7 @@ tm = TrustManager()  # Uses MemoryStore by default
       show_root_heading: true
       show_source: false
 
-JSON file-backed store. Persists trust state across process restarts. Thread-safe via file locking.
+JSON file-backed store. Persists trust state across process restarts. **Not atomic; not thread-safe** — concurrent writes or interrupted saves may corrupt the file. For production multi-process or multi-threaded use, prefer `RedisIPCBridge` or supply your own atomic store implementation.
 
 **Constructor:** `FileStore(path)` — path to the JSON file (created if it does not exist).
 

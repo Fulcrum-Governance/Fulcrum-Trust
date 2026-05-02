@@ -61,9 +61,13 @@ tm = TrustManager(
 tm.evaluate("orchestrator", "code-agent", TrustOutcome.SUCCESS)
 ```
 
-`FulcrumStore` writes locally first and then best-effort ships events to `POST /api/trust/events`
-using `X-API-Key`. If the network call fails, the agent keeps running and local trust state
-remains available.
+> **Note:** The `/api/trust/events` REST endpoint is currently **DEFERRED** —
+> fulcrum-io does not yet expose it. `FulcrumStore` writes locally first and
+> best-effort ships events with a warning log on failure, so the agent keeps
+> running and local trust state remains correct. For production cross-process
+> integration today, use `RedisIPCBridge` (`fulcrum_trust.ipc.redis_bridge`),
+> which writes circuit state to Redis for O(1) reads by the Go Execution
+> Envelope.
 
 ## Install
 
