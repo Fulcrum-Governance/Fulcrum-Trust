@@ -64,7 +64,15 @@ class StandardRecallBaseline:
 
 
 class RLMPrototype:
-    """Minimal Python-side prototype for governed long-context navigation."""
+    """Minimal Python-side prototype for governed long-context navigation.
+
+    .. warning::
+
+        ``RLMPrototype`` is a Phase 5 prototype — **not production-stable**. The
+        API may change without notice, and the restricted execution engine is
+        intentionally minimal (the future production runtime is expected to swap
+        in a hardened sandbox). See ``docs/rlm-python-prototype.md`` for status.
+    """
 
     def __init__(
         self,
