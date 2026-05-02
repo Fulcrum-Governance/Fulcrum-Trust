@@ -7,7 +7,7 @@ status: published
 
 # Why Your AI Agents Need a Circuit Breaker (and How to Build One)
 
-> In November 2025, a team using LangChain agents racked up $47,000 in API costs over 11 days before anyone noticed. Two agents — an analyzer and a verifier — were stuck in a mutual clarification loop with no stop conditions, no cost ceilings, and no shared memory. The agents were doing something. Just nothing useful.
+> Industry reports of multi-agent runaway loops have surfaced incidents reaching tens of thousands of dollars in API costs, accumulating over days before detection. The pattern: two agents — say an analyzer and a verifier — get stuck in a mutual clarification loop with no stop conditions, no cost ceilings, and no shared memory. The agents are doing something. Just nothing useful.
 
 ## What Actually Happened
 
@@ -15,7 +15,7 @@ The pattern is deceptively simple. Agent A produces a response. Agent B receives
 
 Neither agent has a goal-completion signal. Neither agent has memory of previous rounds. Each one sees a fresh input each time and produces a fresh output. From the system's perspective, everything looks healthy. Logs are clean. Responses are non-null. Latencies are normal. The agents are working hard. They're just not working on anything that matters.
 
-What made the $47K incident particularly painful is that the system was doing exactly what it was designed to do: route agent A's output to agent B, and agent B's output back to agent A. The loop was correct. The agents were correct. The problem was that nobody had defined what "done" looked like — and so the system kept running, racking up tokens and API calls, for eleven days.
+What makes this failure mode particularly painful is that the system is doing exactly what it was designed to do: route agent A's output to agent B, and agent B's output back to agent A. The loop is correct. The agents are correct. The problem is that nobody has defined what "done" looks like — and so the system keeps running, racking up tokens and API calls, until someone notices.
 
 This is the gratitude loop failure mode. You can reproduce it in under 60 seconds:
 
@@ -32,7 +32,7 @@ The first instinct is to add a maximum iteration count. Stop after 10 exchanges.
 
 The problem is that "task complexity" varies wildly. A document processing pipeline might legitimately require 40 agent interactions. A code review system might need 20 back-and-forth cycles between a code-reading agent and an issue-tracking agent before both converge on a fix. A research synthesis pipeline might run for hours.
 
-A hard iteration ceiling treats all of these tasks the same. Set it too low and you break legitimate workloads. Set it too high and you're back to the $47K problem — just capped at a slightly lower ceiling.
+A hard iteration ceiling treats all of these tasks the same. Set it too low and you break legitimate workloads. Set it too high and you're back to the runaway-loop problem — just capped at a slightly lower ceiling.
 
 What you actually need is a way to ask: is this interaction making progress? Not "how many steps have occurred" but "are the steps moving the work forward?" That question requires looking at the quality of each exchange, not just counting them.
 
@@ -164,6 +164,6 @@ pip install fulcrum-trust
 
 Then run any of the three demos above. The source is at github.com/Fulcrum-Governance/fulcrum-trust — issues and pull requests welcome.
 
-The `examples/gratitude_loop.py` demo is the clearest entry point: two minutes to see the $47K failure mode reproduced, and two more to see the circuit breaker terminate it. From there, `drift_detection.py` and `recovery.py` cover the subtler cases that show up in production systems.
+The `examples/gratitude_loop.py` demo is the clearest entry point: two minutes to see the failure mode reproduced (modeled on the runaway-loop pattern described above), and two more to see the circuit breaker terminate it. From there, `drift_detection.py` and `recovery.py` cover the subtler cases that show up in production systems.
 
 If you run into a failure mode that the library doesn't handle, open an issue. The model is extensible — custom stores, custom outcome classifiers, and alternative trust priors are all supported through the existing interfaces.
