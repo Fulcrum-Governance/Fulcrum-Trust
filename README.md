@@ -87,7 +87,7 @@ pip install "fulcrum-trust[numpy]"
 ## Support
 
 - Email: [agent@fulcrumlayer.io](mailto:agent@fulcrumlayer.io)
-- Discord: invite link pending final channel URL (tracked in Fulcrum SHIP-03)
+- GitHub Discussions: [Fulcrum-Governance/fulcrum-trust/discussions](https://github.com/Fulcrum-Governance/fulcrum-trust/discussions)
 
 ## Development
 

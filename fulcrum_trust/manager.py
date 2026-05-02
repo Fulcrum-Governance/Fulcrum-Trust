@@ -90,6 +90,21 @@ class TrustManager:
                 self._store.put(pid, state)
 
             # --- IPC circuit state transition ---
+            #
+            # Automatic transitions (driven by trust evaluation):
+            #     CLOSED -> OPEN          when trust drops below threshold
+            #     OPEN -> CLOSED          when trust recovers above threshold
+            #     HALF_OPEN -> CLOSED     when trust recovers above threshold
+            #
+            # Note: HALF_OPEN entry is NOT automatic. The four-state IPC model
+            # (TRUSTED / EVALUATING / ISOLATED / TERMINATED in
+            # ipc/bridge.CircuitState) reserves HALF_OPEN ("EVALUATING — recovery
+            # probe after cooldown") for an external operator API or future
+            # cooldown-gated probe. Today there is no cooldown timer here — the
+            # OPEN -> CLOSED edge is direct as soon as trust recovers. The
+            # HALF_OPEN -> CLOSED branch below is kept so that if an operator
+            # forces a pair into HALF_OPEN out-of-band, normal trust recovery
+            # still resolves it.
             below = self._evaluator.is_below_threshold(state)
             old_cs = state.circuit_state
             if below and old_cs == "CLOSED":

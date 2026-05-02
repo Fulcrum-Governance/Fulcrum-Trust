@@ -1,5 +1,15 @@
 # State — fulcrum-trust
 
+> **Snapshot — superseded by v0.2.0 ship.**
+> This file is a Feb 17–19, 2026 sprint-state snapshot from the original
+> AOS D1 sprint that built v0.1.0. It has not been updated since the
+> v0.2.0 release (RLM, IPC bridge, FulcrumStore). The "Ship Date:
+> ~March 17, 2026" line below is in the past — v0.1.0 shipped to PyPI
+> shortly after that, and v0.2.0 followed. For the current package state
+> see `fulcrum_trust/__init__.py` (`__version__`), `CHANGELOG.md`, and
+> `README.md`. Retained as historical sprint context only.
+> Closes contradiction-ledger F-037.
+
 ## Current Position
 
 **Sprint:** AOS D1 — Trust-Based Circuit Breaker (Weeks 1-4)
