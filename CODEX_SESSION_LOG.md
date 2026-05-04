@@ -1,5 +1,24 @@
 # CODEX Session Log
 
+## 2026-05-03 — Four-Repo Style Mirror
+
+What changed
+- Starting the `fulcrum-trust` slice of `.claude/sprint/yc/codex/PROOFS_AND_MIRROR_SPEC.md` Phase C on branch `style-mirror-2026-05-04`.
+- Scope is documentation and discoverability only: README presentation, citation metadata, code of conduct, and mirror-template cleanup with no library behavior changes.
+
+Start state
+- `main` was up to date with `origin/main`.
+- Existing public-surface docs status:
+  - present: `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`
+  - missing: `CITATION.cff`, `CODE_OF_CONDUCT.md`
+- Baseline verification passed before branching:
+  - `pytest -q` (`186 passed`, coverage `95.65%`)
+
+Next session
+- Commit this log entry before the mirror edits.
+- Add `CITATION.cff`, add `CODE_OF_CONDUCT.md`, and tighten README / CONTRIBUTING copy so the trust repo matches the four-repo presentation standard.
+- Re-run `ruff check .`, `ruff format --check .`, `mypy fulcrum_trust/ --ignore-missing-imports`, and `pytest -q` after the docs pass.
+
 ## 2026-05-03 — YC Critical Fixes Trust Pass
 
 What changed
