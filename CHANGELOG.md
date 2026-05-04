@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `CITATION.cff` and `CODE_OF_CONDUCT.md` to align the repo with the four-repo
+  public presentation standard.
+
+### Documentation
+
+- README cross-links for the Fulcrum architecture and public-surface project
+  docs.
+- CONTRIBUTING test-count wording updated to the current `186`-test baseline.
+
 ## [0.2.0] - 2026-04-09
 
 ### Added

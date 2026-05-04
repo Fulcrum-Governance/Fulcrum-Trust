@@ -19,6 +19,20 @@ Next session
 - Add `CITATION.cff`, add `CODE_OF_CONDUCT.md`, and tighten README / CONTRIBUTING copy so the trust repo matches the four-repo presentation standard.
 - Re-run `ruff check .`, `ruff format --check .`, `mypy fulcrum_trust/ --ignore-missing-imports`, and `pytest -q` after the docs pass.
 
+Verification results
+- `python3 -c "import yaml; yaml.safe_load(open('CITATION.cff'))"` — passed
+- `ruff check .` — passed
+- `ruff format --check .` — passed (`43 files already formatted`)
+- `mypy fulcrum_trust/ --ignore-missing-imports` — passed
+- `pytest -q` — passed (`186 passed`, total coverage `95.50%`)
+
+What changed
+- Added `CITATION.cff` for the current `v0.2.0` release.
+- Added `CODE_OF_CONDUCT.md`.
+- Renamed the README architecture section to the shared `Part of the Fulcrum Architecture` phrasing and added direct links to the repo's public-surface docs.
+- Updated the proof-repo row in the architecture table to its MIT license instead of the previous private/public state wording.
+- Updated `CONTRIBUTING.md` to reflect the current 186-test baseline and added an `Unreleased` documentation note in `CHANGELOG.md`.
+
 ## 2026-05-03 — YC Critical Fixes Trust Pass
 
 What changed
