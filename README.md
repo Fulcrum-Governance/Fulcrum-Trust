@@ -101,7 +101,7 @@ ruff check .        # Lint
 ruff format .       # Format
 ```
 
-## Relationship to the Fulcrum Governance Kernel
+## Part of the Fulcrum Architecture
 
 `fulcrum-trust` is one of four repositories that make up the Fulcrum governance kernel — a portable, typed, pre-execution control plane that sits between intent and action:
 
@@ -110,7 +110,9 @@ ruff format .       # Format
 | **[fulcrum-io](https://github.com/Fulcrum-Governance/fulcrum-io)** | Runtime control plane: gRPC/REST, MCP proxy, CLI, dashboard, SDKs | BSL 1.1 |
 | **[governance-interception-layer](https://github.com/Fulcrum-Governance/governance-interception-layer)** | Out-of-process enforcement boundary: transport adapters, 4-stage pipeline | Apache 2.0 |
 | **fulcrum-trust** (this repo) | Trust engine: Beta(α,β) evaluator, circuit breaker, LangGraph adapter | Apache 2.0 |
-| **[Fulcrum-Proofs](https://github.com/Fulcrum-Governance/Fulcrum-Proofs)** | Formal core: Lean 4 proofs, claim ledger, evidence artifacts | Private |
+| **[Fulcrum-Proofs](https://github.com/Fulcrum-Governance/Fulcrum-Proofs)** | Formal core: Lean 4 proofs, claim ledger, evidence artifacts | MIT |
+
+Project docs: [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Citation](CITATION.cff)
 
 `FulcrumStore` bridges this package to the main Fulcrum backend — trust events flow to the dashboard via `POST /api/trust/events`. The Go backend has parity tests ensuring its trust implementation matches this Python package's behavior exactly.
 

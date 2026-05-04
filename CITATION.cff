@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use fulcrum-trust, please cite the software."
+type: software
+title: "fulcrum-trust"
+version: "0.2.0"
+date-released: "2026-04-09"
+license: "Apache-2.0"
+repository-code: "https://github.com/Fulcrum-Governance/fulcrum-trust"
+url: "https://github.com/Fulcrum-Governance/fulcrum-trust"
+authors:
+  - family-names: Diefenbach
+    given-names: Anthony
+abstract: >-
+  Standalone trust engine for the Fulcrum governance kernel. Provides Beta
+  distribution trust scoring, circuit breaking, adapters, and IPC bridges for
+  multi-agent AI systems.
