@@ -1,8 +1,13 @@
 # RLM Python Prototype
 
 **Status:** Phase 5 prototype complete
+**Stability:** Public prototype reference only; not stable runtime guidance
 **Branch:** `feat/rlm-python-prototype`
 **Package:** `fulcrum_trust/rlm/`
+
+This document describes an intentionally public prototype artifact. It is useful
+for benchmark transparency and architecture discussion, but it should not be
+treated as canonical production runtime guidance for Fulcrum deployments today.
 
 ## Goal
 
@@ -41,4 +46,8 @@ The shipped benchmark uses five fixtures with the gratitude-loop signal planted 
 
 ## Follow-On Implication
 
-This prototype proves the Python-side concept and de-risks the Go-side Phase 2b work: the future production runtime only needs to swap the restricted execution engine while keeping the handle-based navigation contract intact.
+This prototype proves the Python-side concept and de-risks the Go-side Phase 2b
+work: the future production runtime only needs to swap the restricted execution
+engine while keeping the handle-based navigation contract intact. Until that
+runtime exists, this document remains a prototype reference rather than stable
+integration guidance.

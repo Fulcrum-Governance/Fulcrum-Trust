@@ -396,7 +396,11 @@ tm = TrustManager(ipc_bridge=bridge)
 from fulcrum_trust import RLMPrototype, ContextExhausted, RecallBenchmarkResult
 ```
 
-Long-context navigation prototype (Phase 5) — a relationship-history-driven memory layer that recalls past agent-pair interactions inside a bounded context budget. See `docs/rlm-python-prototype.md` for architecture and benchmark methodology.
+Long-context navigation prototype (Phase 5) — a relationship-history-driven
+memory layer that recalls past agent-pair interactions inside a bounded context
+budget. This surface is public for benchmark transparency, but it remains
+prototype/unstable rather than stable runtime guidance. See
+`docs/rlm-python-prototype.md` for architecture and benchmark methodology.
 
 ### RLMPrototype
 

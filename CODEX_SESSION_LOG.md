@@ -1,5 +1,39 @@
 # CODEX Session Log
 
+## 2026-05-06 — Phase 2 Runtime Framing Cleanup
+
+What changed
+- Started the approved Phase 2 `fulcrum-trust` cleanup lane on branch
+  `fix/trust-phase2-runtime-framing-2026-05-06`.
+- Scope is bounded to public runtime framing only: align README, API docs, and
+  prototype labeling around `RedisIPCBridge` as the canonical cross-process
+  path, with REST event shipping explicitly best-effort/deferred.
+- Updated `README.md` so `FulcrumStore` is described as local-first with
+  best-effort REST shipping instead of a live dashboard/event path.
+- Updated `docs/api-reference.md` and `docs/rlm-python-prototype.md` so the RLM
+  surface remains public but is clearly marked prototype/unstable rather than
+  stable runtime guidance.
+
+Start state
+- `main` was clean and in sync with `origin/main` before branching.
+- Approved source for this lane:
+  - `/Users/td/ConceptDev/Projects/Fulcrum/docs/repo-governance/2026-05-04-phase2-prioritization-review.md`
+- File-verified drift to fix:
+  - `README.md` still implied active dashboard/event flow via `POST /api/trust/events`
+  - `docs/rlm-python-prototype.md` was public but not clearly marked as unstable guidance
+  - `docs/api-reference.md` already treated Redis IPC as canonical, but the prototype section needed stronger stability framing
+
+Next session
+- Keep edits limited to canonical runtime wording and prototype labeling.
+- Do not re-elevate REST as canonical.
+- Verify with `ruff check .`, `ruff format --check .`, `mypy fulcrum_trust/ --ignore-missing-imports`, and `pytest -q` before pushing.
+
+Verification results
+- `ruff check .` — passed
+- `ruff format --check .` — passed (`43 files already formatted`)
+- `mypy fulcrum_trust/ --ignore-missing-imports` — passed
+- `pytest -q` — passed (`186 passed`, total coverage `95.65%`)
+
 ## 2026-05-03 — Four-Repo Style Mirror
 
 What changed

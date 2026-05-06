@@ -54,7 +54,7 @@ from fulcrum_trust import FulcrumStore, TrustManager, TrustOutcome
 tm = TrustManager(
     store=FulcrumStore(
         api_key="your-fulcrum-api-key",
-        base_url="https://api.fulcrumlayer.io",  # or local dashboard URL
+        base_url="https://api.fulcrumlayer.io",  # best-effort REST event target
     )
 )
 
@@ -82,7 +82,7 @@ pip install "fulcrum-trust[numpy]"
 
 - [API Reference](docs/api-reference.md) — all public classes and methods
 - [Blog post](docs/blog-trust-circuit-breaker.md) — why agents need circuit breakers
-- [RLM Python Prototype](docs/rlm-python-prototype.md) — Phase 5 long-context navigation benchmark and architecture
+- [RLM Python Prototype](docs/rlm-python-prototype.md) — Phase 5 prototype benchmark and architecture (public, unstable)
 
 ## Support
 
@@ -114,7 +114,7 @@ ruff format .       # Format
 
 Project docs: [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Citation](CITATION.cff)
 
-`FulcrumStore` bridges this package to the main Fulcrum backend — trust events flow to the dashboard via `POST /api/trust/events`. The Go backend has parity tests ensuring its trust implementation matches this Python package's behavior exactly.
+`FulcrumStore` bridges this package to the main Fulcrum backend with local-first persistence and best-effort REST event shipping. For production cross-process integration today, use `RedisIPCBridge`, which publishes circuit state for O(1) reads by the Go Execution Envelope. The Go backend has parity tests ensuring its trust implementation matches this Python package's behavior exactly.
 
 See [ADR-003](https://github.com/Fulcrum-Governance/fulcrum-io/blob/main/product/ADRs/003-three-repo-architecture.md) for the original repo-architecture rationale; the `governance-interception-layer` repo was added in April 2026 when GIL shipped as the out-of-process enforcement boundary.
 
