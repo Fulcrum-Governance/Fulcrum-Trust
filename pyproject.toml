@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "fulcrum-trust"
 version = "0.2.0"
-description = "Trust-based circuit breaking for multi-agent AI systems"
+description = "Adaptive trust governance for the agent control plane"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]

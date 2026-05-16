@@ -1,6 +1,6 @@
 # fulcrum-trust
 
-The trust engine of the Fulcrum governance kernel. Trust-based circuit breaking for multi-agent AI systems.
+Adaptive trust governance for the agent control plane. Bayesian Beta(α,β) trust evaluation, circuit breaking, and trust-aware routing for AI agent harnesses.
 
 [![CI](https://github.com/Fulcrum-Governance/fulcrum-trust/actions/workflows/ci.yml/badge.svg)](https://github.com/Fulcrum-Governance/fulcrum-trust/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/fulcrum-trust)](https://pypi.org/project/fulcrum-trust/)
