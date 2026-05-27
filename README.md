@@ -108,7 +108,7 @@ ruff format .       # Format
 | Repo | Role | License |
 |------|------|---------|
 | **[fulcrum-io](https://github.com/Fulcrum-Governance/fulcrum-io)** | Runtime control plane: gRPC/REST, MCP proxy, CLI, dashboard, SDKs | BSL 1.1 |
-| **[governance-interception-layer](https://github.com/Fulcrum-Governance/governance-interception-layer)** | Out-of-process enforcement boundary: transport adapters, 4-stage pipeline | Apache 2.0 |
+| **[Fulcrum-Boundary](https://github.com/Fulcrum-Governance/Fulcrum-Boundary)** | Out-of-process enforcement boundary: transport adapters, 4-stage pipeline | Apache 2.0 |
 | **fulcrum-trust** (this repo) | Trust engine: Beta(α,β) evaluator, circuit breaker, LangGraph adapter | Apache 2.0 |
 | **[Fulcrum-Proofs](https://github.com/Fulcrum-Governance/Fulcrum-Proofs)** | Formal core: Lean 4 proofs, claim ledger, evidence artifacts | MIT |
 
@@ -116,7 +116,7 @@ Project docs: [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Cha
 
 `FulcrumStore` bridges this package to the main Fulcrum backend with local-first persistence and best-effort REST event shipping. For production cross-process integration today, use `RedisIPCBridge`, which publishes circuit state for O(1) reads by the Go Execution Envelope. The Go backend has parity tests ensuring its trust implementation matches this Python package's behavior exactly.
 
-See [ADR-003](https://github.com/Fulcrum-Governance/fulcrum-io/blob/main/product/ADRs/003-three-repo-architecture.md) for the original repo-architecture rationale; the `governance-interception-layer` repo was added in April 2026 when GIL shipped as the out-of-process enforcement boundary.
+See [ADR-003](https://github.com/Fulcrum-Governance/fulcrum-io/blob/main/product/ADRs/003-three-repo-architecture.md) for the original repo-architecture rationale; the out-of-process enforcement boundary was added in April 2026 as GIL and now lives in the `Fulcrum-Boundary` repo.
 
 ## Architecture
 

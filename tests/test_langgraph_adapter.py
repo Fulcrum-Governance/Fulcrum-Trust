@@ -319,7 +319,7 @@ class TestTrustAwareGraph:
             compiled = wrapper.compile()
             return await compiled.ainvoke({"value": "", "count": 0})  # type: ignore[no-any-return]
 
-        result = asyncio.get_event_loop().run_until_complete(run())
+        result = asyncio.run(run())
         assert result["count"] == 10
         assert tm.get_trust_score("a", "b") != 0.5, (
             "Trust score unchanged after async node — trust evaluation wrapper did not run"
