@@ -1,6 +1,6 @@
 # fulcrum-trust — Agent Context
 
-**Last updated:** 2026-04-17
+**Last updated:** 2026-05-27
 
 ---
 
@@ -11,13 +11,13 @@ This is one of four repositories under the `Fulcrum-Governance` GitHub org.
 | Repo | Local Path | Language | Purpose |
 |------|-----------|----------|---------|
 | **fulcrum-io** | `/Users/td/ConceptDev/Projects/Fulcrum` | Go 1.26.2 | Backend platform: gRPC server, REST gateway, MCP endpoint, policy engine, cognitive layer, foundry, entropy monitor |
-| **governance-interception-layer** | `/Users/td/ConceptDev/Projects/governance-interception-layer` | Go 1.26.2 | Out-of-process enforcement boundary: transport adapters, shared governance pipeline, cross-transport parity |
+| **Fulcrum-Boundary** | `/Users/td/ConceptDev/Projects/Fulcrum-Boundary` | Go 1.26.2 | Out-of-process enforcement boundary: transport adapters, shared governance pipeline, cross-transport parity |
 | **fulcrum-trust** (this repo) | `/Users/td/ConceptDev/Projects/fulcrum-trust` | Python 3.9+ | Trust model authority: beta-distribution trust math, circuit breaker, LangGraph adapter, IPC bridge, RLM prototype |
 | **Fulcrum-Proofs** | `/Users/td/ConceptDev/Projects/Fulcrum-Proofs` | Lean 4 / TLA+ / Python | Formal verification: Lean 4 proofs, TLA+ model checking, benchmark evidence, claim ledger |
 
 ### Cross-Repo Relationships
 - **Trust parity**: Go trust implementation in `fulcrum-io` must match Python math here. Enforced via `make trust-parity-runtime` in the IO repo.
-- **GIL boundary**: `governance-interception-layer` owns out-of-process transport interception; this repo owns trust math and adapters.
+- **Boundary**: `Fulcrum-Boundary` owns out-of-process transport interception; this repo owns trust math and adapters.
 - **IPC bridge**: `fulcrum_trust/ipc/` communicates with `fulcrum-io` Go process via Redis-backed IPC (`internal/trust/` in Go).
 - **Product bible**: Canonical product definition lives in `fulcrum-io/product/`. This repo's `PRODUCT.md` is a pointer file.
 
