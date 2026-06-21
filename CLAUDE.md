@@ -85,3 +85,7 @@ fulcrum_trust/
 - Zero mypy errors in strict mode
 - All public APIs have docstrings + type hints
 - No dependencies beyond numpy (optional) for core
+
+## Commit attribution
+
+Never add AI, Claude, or Anthropic co-authorship or attribution: no `Co-Authored-By` trailer, no "Generated with Claude" lines, no AI credit anywhere (commit messages, PR titles/bodies, changelogs, code comments). Author as the repository owner only.
