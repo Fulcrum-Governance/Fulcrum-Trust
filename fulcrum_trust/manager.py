@@ -84,10 +84,6 @@ class TrustManager:
             else:
                 state = apply_decay(state, self._config.half_life_seconds)
             state = self._evaluator.update(state, outcome)
-            if self._flusher is not None:
-                self._flusher.enqueue(state)
-            else:
-                self._store.put(pid, state)
 
             # --- IPC circuit state transition ---
             #
@@ -116,6 +112,19 @@ class TrustManager:
 
             if new_cs != old_cs:
                 state.circuit_state = new_cs
+
+            # Persist once, AFTER the transition is applied, so copy-on-put
+            # stores (FileStore, FulcrumStore) capture the final circuit_state.
+            # MemoryStore stores by reference, so it tolerated the prior order;
+            # the copying stores did not. Persistence stays unconditional: every
+            # evaluate persists the updated alpha/beta_val as before.
+            if self._flusher is not None:
+                self._flusher.enqueue(state)
+            else:
+                self._store.put(pid, state)
+
+            # Publish IPC only on an actual transition.
+            if new_cs != old_cs:
                 ipc_state = circuit_state_from_str(new_cs)
                 self._ipc.publish_state(
                     agent_a,
