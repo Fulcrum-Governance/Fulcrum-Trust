@@ -1,0 +1,34 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+# Per-worktree virtualenv (isolated, ephemeral). Editable install + pytest.
+setup = "python3 -m venv .venv && .venv/bin/pip install -q -e . && .venv/bin/pip install -q pytest"
+# Run button = the pytest gate.
+run = ".venv/bin/pytest -q"
+run_mode = "concurrent"
+
+[git]
+archive_on_merge = true
+delete_branch_on_archive = true
+worktree_push_auto_setup_remote = true
+
+[prompts]
+general = """
+You are in an isolated Conductor worktree for fulcrum-trust, the Python trust-state component of the Fulcrum governance system.
+
+Rules for this lane:
+- This worktree is ONE lane for ONE task. Do not start unrelated work here; request a new workspace instead.
+- You are ALREADY in this lane's dedicated worktree and branch, which Conductor created. Do NOT create branches or worktrees, run `git checkout -b`, or switch to / start from `main`. This checkout IS your lane; work only here.
+- A workspace virtualenv lives at .venv. Run tests with `.venv/bin/pytest -q`; they must pass before you call the work done.
+- Commit incrementally with clear, conventional-commit-style messages. Do not end a turn with a dirty tree.
+- Never add AI, Claude, or Anthropic co-authorship or attribution anywhere: commit messages, PR titles and bodies, changelogs, code comments. Author as the repo owner only.
+- Follow CLAUDE.md.
+"""
+
+code_review = """
+Review against fulcrum-trust's bar: correctness of the trust-state computation and persistence, test coverage for new behavior, and no silent change to scoring semantics. Flag missing tests and any change to trust math that lacks justification.
+"""
+
+create_pr = """
+Write the PR with a conventional-commit-style title, what changed and why, any impact on trust-state semantics, and pytest evidence. Keep it factual and tight. Never add AI attribution or 'Generated with' lines.
+"""
