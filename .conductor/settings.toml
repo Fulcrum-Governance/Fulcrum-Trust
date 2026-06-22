@@ -2,7 +2,7 @@
 
 [scripts]
 # Per-worktree virtualenv (isolated, ephemeral). Editable install + pytest.
-setup = "python3 -m venv .venv && .venv/bin/pip install -q -e . && .venv/bin/pip install -q pytest"
+setup = "python3 -m venv .venv && .venv/bin/pip install -q -e '.[dev]'"
 # Run button = the pytest gate.
 run = ".venv/bin/pytest -q"
 run_mode = "concurrent"
