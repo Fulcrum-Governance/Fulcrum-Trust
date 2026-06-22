@@ -12,7 +12,7 @@ You are coordinating a build using Claude Code Agent Teams for the Fulcrum AOS e
 
 ## Arguments
 
-- **Plan path**: `$ARGUMENTS[0]` - Path to a markdown plan file (e.g., `docs/plans/adr-010-implementation-plan.md`)
+- **Plan path**: `$ARGUMENTS[0]` - Path to a markdown plan file (e.g., `docs/plans/my-feature-plan.md`)
 - **Team size**: `$ARGUMENTS[1]` - Number of agents (optional — determined automatically if omitted)
 
 ## Step 1: Read the Plan and Load Context
