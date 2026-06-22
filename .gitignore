@@ -33,3 +33,6 @@ Thumbs.db
 # Distribution
 *.tar.gz
 *.whl
+
+# Conductor app per-repo config (local, not shared)
+.conductor/

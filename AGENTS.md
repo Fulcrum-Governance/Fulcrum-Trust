@@ -63,3 +63,7 @@ fulcrum_trust/
 - Apache 2.0 license
 - Conventional commits: `type(scope): message`
 - Never commit secrets
+
+## Commit attribution
+
+Never add AI, Claude, or Anthropic co-authorship or attribution: no `Co-Authored-By` trailer, no "Generated with Claude" lines, no AI credit anywhere (commit messages, PR titles/bodies, changelogs, code comments). Author as the repository owner only.
