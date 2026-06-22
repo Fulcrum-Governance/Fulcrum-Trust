@@ -34,5 +34,6 @@ Thumbs.db
 *.tar.gz
 *.whl
 
-# Conductor app per-repo config (local, not shared)
-.conductor/
+# Conductor: version settings.toml; keep local overrides + runtime out of git
+.conductor/*
+!.conductor/settings.toml
