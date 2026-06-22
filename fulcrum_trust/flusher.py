@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import atexit
+import logging
 import queue
 import threading
 import time
 
 from fulcrum_trust.stores.base import TrustStore
 from fulcrum_trust.types import TrustState
+
+logger = logging.getLogger("fulcrum_trust.flusher")
 
 
 class BackgroundFlusher:
@@ -37,6 +40,7 @@ class BackgroundFlusher:
         self._store = store
         self._flush_interval = flush_interval
         self._max_batch = max_batch
+        self.failed_writes = 0  # count of store.put failures (observability)
         self._queue: queue.Queue[TrustState | None] = queue.Queue()
         self._stop_event = threading.Event()
         self._thread = threading.Thread(
@@ -90,6 +94,22 @@ class BackgroundFlusher:
                 self._persist(batch)
 
     def _persist(self, batch: list[TrustState]) -> None:
-        """Write a batch of TrustState objects to the store."""
+        """Write a batch of TrustState objects to the store.
+
+        Each write is isolated: if ``store.put`` raises for one pair (e.g. a
+        disk or serialization error), the failure is logged and the loop
+        continues with the rest of the batch. Exceptions are never allowed to
+        escape this method, which keeps the daemon ``_run`` thread alive — a
+        single bad write must not silently kill the flusher and strand every
+        subsequent enqueue.
+        """
         for state in batch:
-            self._store.put(state.pair_id, state)
+            try:
+                self._store.put(state.pair_id, state)
+            except Exception:
+                self.failed_writes += 1
+                logger.exception(
+                    "Flusher store.put failed for pair_id=%s — "
+                    "dropping this event and continuing",
+                    state.pair_id,
+                )
