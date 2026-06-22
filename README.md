@@ -81,6 +81,7 @@ pip install "fulcrum-trust[numpy]"
 ## Documentation
 
 - [API Reference](docs/api-reference.md) — all public classes and methods
+- [Formal Validation](docs/formal-validation.md) — Lean 4 proof backing for the formal termination guarantee
 - [Blog post](docs/blog-trust-circuit-breaker.md) — why agents need circuit breakers
 - [RLM Python Prototype](docs/rlm-python-prototype.md) — Phase 5 prototype benchmark and architecture (public, unstable)
 
