@@ -79,6 +79,9 @@ fulcrum_trust/
 - Redis key schema and CircuitState values (0-3) are the IPC contract between Python and Go
 - FulcrumStore REST path (`/api/trust/events`) is deferred — Redis IPC bridge is the canonical integration
 
+## Deferred Work
+- [`PUNCH_LIST.md`](PUNCH_LIST.md) is the forward-looking backlog: deferred integration/persistence work (e.g. `circuit_state` store persistence), RLM stabilization, and cross-repo fulcrum-io items. The trust-math/scoring core has no deferred items.
+
 ## Quality Gates
 - 95%+ coverage on core (types, evaluator, manager, decay, stores)
 - 90%+ coverage on adapters
