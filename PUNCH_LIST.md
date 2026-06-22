@@ -20,6 +20,21 @@ archive.
 
 ---
 
+## Status — 2026-06-22
+
+Execution underway as separate branches/PRs off `main` (one lane per item):
+
+| Item | Status | PR |
+|------|--------|-----|
+| PL-1 persist `circuit_state` | open for review — confirmed a **real persistence bug**: copy-on-put stores (`FileStore`, `FulcrumStore` event) dropped automatic CLOSED↔OPEN transitions because `evaluate()` persisted *before* the transition. Fixed by persisting once, after. | #23 |
+| PL-2 best-effort audit | open for review — the canonical Redis write already fails *closed* (✓) and NATS is correctly best-effort (✓); the real silent failure was `BackgroundFlusher` dying on a store error and stranding all later writes. Made resilient. | #21 |
+| PL-4 coverage top-up | open for review — five modules to 100%, 95.65% → 97.5%. | #22 |
+| PL-3 RLM stabilize/split | **decision pending** — not auto-executed (architectural choice). See below. | — |
+
+PL-5..8 remain cross-repo (fulcrum-io); PL-9 stays blocked.
+
+---
+
 ## Actionable in this repo
 
 ### PL-1 · Persist & restore `circuit_state` (P-06 D1→D2 handoff) · ACTIONABLE
