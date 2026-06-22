@@ -10,8 +10,8 @@ This is one of four repositories under the `Fulcrum-Governance` GitHub org.
 
 | Repo | Local Path | Language | Purpose |
 |------|-----------|----------|---------|
-| **fulcrum-io** | `/Users/td/ConceptDev/Projects/Fulcrum` | Go 1.26.2 | Backend platform: gRPC server, REST gateway, MCP endpoint, policy engine, cognitive layer, foundry, entropy monitor |
-| **Fulcrum-Boundary** | `/Users/td/ConceptDev/Projects/Fulcrum-Boundary` | Go 1.26.2 | Out-of-process enforcement boundary: transport adapters, shared governance pipeline, cross-transport parity |
+| **fulcrum-io** | `/Users/td/ConceptDev/Projects/Fulcrum` | Go 1.26.3 | Backend platform: gRPC server, REST gateway, MCP endpoint, policy engine, cognitive layer, foundry, entropy monitor |
+| **Fulcrum-Boundary** | `/Users/td/ConceptDev/Projects/Fulcrum-Boundary` | Go 1.25.0 (toolchain go1.26.4) | Out-of-process enforcement boundary: transport adapters, shared governance pipeline, cross-transport parity |
 | **fulcrum-trust** (this repo) | `/Users/td/ConceptDev/Projects/fulcrum-trust` | Python 3.9+ | Trust model authority: beta-distribution trust math, circuit breaker, LangGraph adapter, IPC bridge, RLM prototype |
 | **Fulcrum-Proofs** | `/Users/td/ConceptDev/Projects/Fulcrum-Proofs` | Lean 4 / TLA+ / Python | Formal verification: Lean 4 proofs, TLA+ model checking, benchmark evidence, claim ledger |
 
