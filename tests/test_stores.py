@@ -113,8 +113,27 @@ class TestFileStore:
         store = FileStore(tmp_path / "trust.json")
         store.delete("nonexistent")  # Should not raise
 
-    def test_all_pairs_empty_file(self, tmp_path: pytest.TempPathFactory) -> None:
+    def test_all_pairs_missing_file(self, tmp_path: pytest.TempPathFactory) -> None:
         store = FileStore(tmp_path / "trust.json")
+        assert store.all_pairs() == []
+
+    def test_existing_empty_file_loads_as_empty(
+        self, tmp_path: pytest.TempPathFactory
+    ) -> None:
+        """An existing but empty file is loaded as an empty store, not a crash."""
+        path = tmp_path / "trust.json"
+        path.write_text("")
+        store = FileStore(path)
+        assert store.all_pairs() == []
+        assert store.get("anything") is None
+
+    def test_existing_whitespace_only_file_loads_as_empty(
+        self, tmp_path: pytest.TempPathFactory
+    ) -> None:
+        """A file containing only whitespace hits the empty-content load branch."""
+        path = tmp_path / "trust.json"
+        path.write_text("   \n\t  \n")
+        store = FileStore(path)
         assert store.all_pairs() == []
 
     def test_all_pairs_with_data(self, tmp_path: pytest.TempPathFactory) -> None:
