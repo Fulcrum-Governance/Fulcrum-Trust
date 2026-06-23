@@ -191,9 +191,7 @@ class TestFlusherResilience:
         flusher = BackgroundFlusher(store, flush_interval=10.0)  # manual flush only
 
         for pair_id in ("good_0", "bad", "good_1"):
-            flusher.enqueue(
-                TrustState(pair_id=pair_id, agent_a="a", agent_b="b")
-            )
+            flusher.enqueue(TrustState(pair_id=pair_id, agent_a="a", agent_b="b"))
 
         with caplog.at_level(logging.WARNING, logger="fulcrum_trust.flusher"):
             # Must not raise, even though "bad" fails mid-batch.
@@ -223,9 +221,7 @@ class TestFlusherResilience:
         with caplog.at_level(logging.WARNING, logger="fulcrum_trust.flusher"):
             flusher.flush()
 
-        failure_records = [
-            r for r in caplog.records if r.levelno >= logging.WARNING
-        ]
+        failure_records = [r for r in caplog.records if r.levelno >= logging.WARNING]
         assert failure_records, "expected a WARNING+ log for the failed write"
         flusher.shutdown()
 
@@ -298,8 +294,6 @@ class TestRedisBridgeFailClosedContract:
 
         with caplog.at_level(logging.ERROR, logger="fulcrum_trust.ipc"):
             with pytest.raises(RuntimeError, match="EXEC failed"):
-                bridge.publish_state(
-                    "agent-x", CircuitState.ISOLATED, trust_score=0.1
-                )
+                bridge.publish_state("agent-x", CircuitState.ISOLATED, trust_score=0.1)
 
         assert "fail-closed" in caplog.text
