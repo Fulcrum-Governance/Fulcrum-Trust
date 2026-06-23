@@ -1,7 +1,7 @@
 # RLM Python Prototype
 
 **Status:** Phase 5 prototype complete
-**Stability:** Public prototype reference only; not stable runtime guidance
+**Stability:** Public but unstable — the API may change without notice and is not production-stable; reference/benchmark only, not stable runtime guidance
 **Branch:** `feat/rlm-python-prototype`
 **Package:** `fulcrum_trust/rlm/`
 

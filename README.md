@@ -83,7 +83,7 @@ pip install "fulcrum-trust[numpy]"
 - [API Reference](docs/api-reference.md) — all public classes and methods
 - [Formal Validation](docs/formal-validation.md) — Lean 4 proof backing for the formal termination guarantee
 - [Blog post](docs/blog-trust-circuit-breaker.md) — why agents need circuit breakers
-- [RLM Python Prototype](docs/rlm-python-prototype.md) — Phase 5 prototype benchmark and architecture (public, unstable)
+- [RLM Python Prototype](docs/rlm-python-prototype.md) — Phase 5 prototype benchmark and architecture (public prototype — unstable API, not production-stable)
 
 ## Support
 
@@ -129,7 +129,7 @@ fulcrum_trust/
 ├── manager.py      — TrustManager: orchestrates evaluator + store + decay
 ├── context.py      — ContextVar isolation for concurrent evaluations
 ├── flusher.py      — Background telemetry batching (non-blocking store writes)
-├── rlm/
+├── rlm/             — Phase 5 prototype: public but unstable API, not production-stable
 │   ├── context.py  — 128k-bounded long-context externalization into symbolic handles
 │   ├── runtime.py  — Restricted `peek` + `llm_batch` navigation runtime
 │   ├── prototype.py — Gratitude-loop analysis + lost-in-the-middle benchmark
