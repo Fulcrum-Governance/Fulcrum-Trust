@@ -29,7 +29,7 @@ Execution underway as separate branches/PRs off `main` (one lane per item):
 | PL-1 persist `circuit_state` | open for review — confirmed a **real persistence bug**: copy-on-put stores (`FileStore`, `FulcrumStore` event) dropped automatic CLOSED↔OPEN transitions because `evaluate()` persisted *before* the transition. Fixed by persisting once, after. | #23 |
 | PL-2 best-effort audit | open for review — the canonical Redis write already fails *closed* (✓) and NATS is correctly best-effort (✓); the real silent failure was `BackgroundFlusher` dying on a store error and stranding all later writes. Made resilient. | #21 |
 | PL-4 coverage top-up | open for review — five modules to 100%, 95.65% → 97.5%. | #22 |
-| PL-3 RLM stabilize/split | **decision pending** — not auto-executed (architectural choice). See below. | — |
+| PL-3 RLM stabilize/split | **resolved** — decision: keep `rlm/` explicitly unstable (option B); labeling formalized across README/docs/CHANGELOG + a module-level marker. No scoring change. See below. | this PR |
 
 PL-5..8 remain cross-repo (fulcrum-io); PL-9 stays blocked.
 
@@ -61,14 +61,19 @@ Best-effort integration paths swallow exceptions with bare `pass`.
   is either "confirmed safe + documented" or a targeted fix that surfaces/logs the
   correctness-critical write. Trust-math untouched.
 
-### PL-3 · RLM prototype: stabilize or keep labeled-unstable · DECISION → ACTIONABLE
+### PL-3 · RLM prototype: stabilize or keep labeled-unstable · RESOLVED
 `fulcrum_trust/rlm/` ships as a "prototype (public, unstable) / Phase 5".
-- **Evidence:** `README.md:86`, `docs/rlm-python-prototype.md:3`,
-  `CHANGELOG.md:32-37`; coverage gaps at `rlm/prototype.py:213-216,220`.
-- **Decision needed:** promote to a supported API, keep explicitly-unstable, or
-  split into its own package.
-- **Resolution:** decide first; if promoting, its own lane (API surface +
-  stability contract + coverage).
+- **Decision:** **keep `rlm/` explicitly unstable** (option B). No product
+  signal justified promoting (A) or splitting (C): `rlm/` is a self-contained
+  leaf the trust core does not depend on, and it remains a benchmark/transparency
+  prototype rather than a durable, versioned API.
+- **Done (this lane):** made the "public but unstable" contract consistent and
+  unmistakable across `README.md` (docs list + architecture tree),
+  `CHANGELOG.md`, `docs/api-reference.md`, `docs/rlm-python-prototype.md`, the
+  `fulcrum_trust/__init__.py` export comment, and the `RLMPrototype` docstring;
+  added a `fulcrum_trust/rlm` module docstring plus a `__stability__ =
+  "prototype"` marker. No scoring/behavior change; suite stays green at ≥95%.
+- **Revisit:** promote (A) or split (C) only when real usage signals demand it.
 
 ### PL-4 · Coverage top-up on real gaps · ACTIONABLE
 - **Evidence:** uncovered lines in `rlm/prototype.py`, `rlm/fixtures.py:66,83,88`,

@@ -68,10 +68,11 @@ class RLMPrototype:
 
     .. warning::
 
-        ``RLMPrototype`` is a Phase 5 prototype — **not production-stable**. The
-        API may change without notice, and the restricted execution engine is
-        intentionally minimal (the future production runtime is expected to swap
-        in a hardened sandbox). See ``docs/rlm-python-prototype.md`` for status.
+        ``RLMPrototype`` is a Phase 5 prototype — **public but unstable** and
+        **not production-stable**. The API may change without notice, and the
+        restricted execution engine is intentionally minimal (the future
+        production runtime is expected to swap in a hardened sandbox). See
+        ``docs/rlm-python-prototype.md`` for status.
     """
 
     def __init__(

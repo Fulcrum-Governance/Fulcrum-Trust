@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README cross-links for the Fulcrum architecture and public-surface project
   docs.
 - CONTRIBUTING test-count wording updated to the current `186`-test baseline.
+- Clarified the stability of the RLM subpackage (`fulcrum_trust/rlm/`): it is a
+  public but unstable Phase 5 prototype. The "unstable" contract is now stated
+  consistently across the README, API reference, the `fulcrum_trust.rlm` module
+  docstring, and a `__stability__ = "prototype"` marker (PUNCH_LIST.md PL-3
+  resolved — kept explicitly unstable; no scoring change).
 
 ## [0.2.0] - 2026-04-09
 
@@ -29,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `NullBridge`: no-op for when IPC is not configured
   - Redis key schema: `agent:{id}:circuit_state` → integer (0-3)
 
-- **RLM Prototype** (`fulcrum_trust/rlm/`): Governed long-context navigation
+- **RLM Prototype** (`fulcrum_trust/rlm/`): Governed long-context navigation — public prototype, unstable API (not production-stable)
   - `externalize_context()` partitions 100K+ token histories into symbolic handles with a hard 128k token ceiling
   - `RLMRuntime` exposes restricted `peek` and `llm_batch` primitives for generated navigation programs
   - `RLMPrototype` detects planted gratitude-loop signatures hidden in the middle 80% of long sessions
