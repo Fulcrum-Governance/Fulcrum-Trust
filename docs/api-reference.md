@@ -86,7 +86,8 @@ Dataclass holding the Beta distribution parameters for an agent pair.
 | `beta_val` | `float` | Negative evidence accumulator (default 1.0 uninformative prior) |
 | `last_updated` | `float` | Unix timestamp of last state mutation |
 | `interaction_count` | `int` | Total number of recorded interactions |
-| `circuit_state` | `str` | Circuit breaker state: `"CLOSED"`, `"OPEN"`, or `"HALF_OPEN"`. Default `"CLOSED"`. |
+| `circuit_state` | `str` | Circuit breaker state: `"CLOSED"`, `"OPEN"`, `"HALF_OPEN"`, or `"TERMINATED"`. Default `"CLOSED"`. |
+| `opened_at` | `float \| None` | Unix timestamp the pair entered `OPEN`; anchors the recovery cooldown gate. `None` until the first `OPEN` (and for state persisted before this field existed). |
 
 **Property:**
 
@@ -155,9 +156,10 @@ Configuration dataclass passed to `TrustManager`. All fields have defaults.
 | `failure_weight` | `1.0` | Beta increment per `FAILURE` outcome |
 | `partial_alpha_weight` | `0.5` | Alpha increment per `PARTIAL` outcome |
 | `partial_beta_weight` | `0.5` | Beta increment per `PARTIAL` outcome |
+| `recovery_cooldown_seconds` | `None` | If set (`> 0`), recovery from `OPEN` routes through a `HALF_OPEN` probe after this many seconds instead of jumping straight to `CLOSED`. `None` keeps the direct `OPEN → CLOSED` recovery edge. |
 | `alpha_max` | `None` | Optional hard cap on alpha, clamped after each update. Bounds worst-case failures-to-detection to `ceil(alpha_max*(q-p)/p)` for threshold `p/q` — see README ["Bounded detection latency (`alpha_max`)"](../README.md#bounded-detection-latency-alpha_max) |
 
-**Validation:** `threshold` must be in `(0, 1)`. `half_life_seconds` must be positive. `alpha_max`, when set, must satisfy `alpha_max >= alpha_prior > 0` (`alpha_max == alpha_prior` is a legal boundary that freezes success accrual — degenerate in practice).
+**Validation:** `threshold` must be in `(0, 1)`. `half_life_seconds` must be positive. `recovery_cooldown_seconds`, when set, must be positive. `alpha_max`, when set, must satisfy `alpha_max >= alpha_prior > 0` (`alpha_max == alpha_prior` is a legal boundary that freezes success accrual — degenerate in practice).
 
 **Example:**
 
@@ -343,7 +345,7 @@ from fulcrum_trust import CircuitState
 | Member | Value | TrustState string | Meaning |
 |--------|-------|-------------------|---------|
 | `CircuitState.TRUSTED` | `0` | `"CLOSED"` | Normal operation. |
-| `CircuitState.EVALUATING` | `1` | `"HALF_OPEN"` | Recovery probe after cooldown. **Reserved for an external operator API or a future cooldown-gated probe** — not entered automatically by `TrustManager.evaluate()`. See `manager.py` IPC transition comment. |
+| `CircuitState.EVALUATING` | `1` | `"HALF_OPEN"` | Recovery probe after cooldown. Entered automatically when `TrustConfig.recovery_cooldown_seconds` is set: once the cooldown elapses, the next `TrustManager.evaluate()` moves `OPEN → HALF_OPEN`, and the probe resolves to `CLOSED` (recovered) or back to `OPEN` (still failing). With the cooldown unset (default) it is not entered automatically — reserved for an external operator API. See `manager.py` IPC transition comment. |
 | `CircuitState.ISOLATED` | `2` | `"OPEN"` | Trust below threshold. |
 | `CircuitState.TERMINATED` | `3` | `"TERMINATED"` | Administrative kill switch (set by `TrustManager.terminate()`, not by the trust pipeline). Cannot recover without an explicit reset. |
 

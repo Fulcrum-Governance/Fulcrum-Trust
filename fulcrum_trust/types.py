@@ -46,6 +46,9 @@ class TrustState:
     circuit_state: str = (
         "CLOSED"  # CircuitBreakerState: CLOSED | OPEN | HALF_OPEN | TERMINATED
     )
+    opened_at: float | None = None  # wall-clock time the pair entered OPEN;
+    # None until first OPEN (and for pre-opened_at persisted state). Anchors the
+    # recovery cooldown gate — see TrustConfig.recovery_cooldown_seconds.
 
     @property
     def trust_score(self) -> float:
@@ -67,6 +70,12 @@ class TrustConfig:
         failure_weight: Beta increment per FAILURE outcome. Default 1.0.
         partial_alpha_weight: Alpha increment per PARTIAL outcome. Default 0.5.
         partial_beta_weight: Beta increment per PARTIAL outcome. Default 0.5.
+        recovery_cooldown_seconds: If set (> 0), recovery from OPEN routes through
+            a HALF_OPEN probe rather than jumping straight to CLOSED: the pair
+            stays OPEN until this many seconds elapse since it entered OPEN, then
+            the next evaluation admits a HALF_OPEN probe whose outcome resolves to
+            CLOSED (recovered) or OPEN (still failing). Default ``None`` preserves
+            the direct OPEN -> CLOSED recovery edge (zero behavior change).
         alpha_max: Optional hard cap on alpha. When set, TrustEvaluator.update()
             clamps alpha to this value after each increment, bounding the
             worst-case number of failures before the circuit opens to a
@@ -84,6 +93,7 @@ class TrustConfig:
     failure_weight: float = 1.0
     partial_alpha_weight: float = 0.5
     partial_beta_weight: float = 0.5
+    recovery_cooldown_seconds: float | None = None
     alpha_max: float | None = None
 
     def __post_init__(self) -> None:
@@ -92,6 +102,14 @@ class TrustConfig:
         if self.half_life_seconds <= 0:
             raise ValueError(
                 f"half_life_seconds must be positive, got {self.half_life_seconds}"
+            )
+        if (
+            self.recovery_cooldown_seconds is not None
+            and self.recovery_cooldown_seconds <= 0
+        ):
+            raise ValueError(
+                "recovery_cooldown_seconds must be positive when set, "
+                f"got {self.recovery_cooldown_seconds}"
             )
         if self.alpha_max is not None and not (self.alpha_max >= self.alpha_prior > 0):
             raise ValueError(
