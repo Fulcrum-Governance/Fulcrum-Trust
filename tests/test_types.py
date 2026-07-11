@@ -53,6 +53,10 @@ class TestTrustState:
         state = TrustState(pair_id="abc", agent_a="a", agent_b="b")
         assert isinstance(state.circuit_state, str)
 
+    def test_opened_at_default_is_none(self) -> None:
+        state = TrustState(pair_id="abc", agent_a="a", agent_b="b")
+        assert state.opened_at is None
+
 
 class TestTrustConfig:
     def test_default_threshold(self) -> None:
@@ -87,6 +91,21 @@ class TestTrustConfig:
     def test_custom_threshold(self) -> None:
         cfg = TrustConfig(threshold=0.5)
         assert cfg.threshold == pytest.approx(0.5)
+
+    def test_default_recovery_cooldown_is_none(self) -> None:
+        assert TrustConfig().recovery_cooldown_seconds is None
+
+    def test_valid_recovery_cooldown(self) -> None:
+        cfg = TrustConfig(recovery_cooldown_seconds=60.0)
+        assert cfg.recovery_cooldown_seconds == pytest.approx(60.0)
+
+    def test_zero_recovery_cooldown_raises(self) -> None:
+        with pytest.raises(ValueError, match="recovery_cooldown_seconds"):
+            TrustConfig(recovery_cooldown_seconds=0.0)
+
+    def test_negative_recovery_cooldown_raises(self) -> None:
+        with pytest.raises(ValueError, match="recovery_cooldown_seconds"):
+            TrustConfig(recovery_cooldown_seconds=-1.0)
 
 
 class TestTrustCircuitOpen:

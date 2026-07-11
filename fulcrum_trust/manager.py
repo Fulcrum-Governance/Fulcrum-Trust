@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import time
 
 from fulcrum_trust.context import reset_trust_context, set_trust_context
 from fulcrum_trust.decay import apply_decay
@@ -87,28 +88,73 @@ class TrustManager:
 
             # --- IPC circuit state transition ---
             #
-            # Automatic transitions (driven by trust evaluation):
-            #     CLOSED -> OPEN          when trust drops below threshold
-            #     OPEN -> CLOSED          when trust recovers above threshold
-            #     HALF_OPEN -> CLOSED     when trust recovers above threshold
+            # This mirrors the proved four-state machine (TRUSTED / EVALUATING /
+            # ISOLATED / TERMINATED in ipc/bridge.CircuitState; strings CLOSED /
+            # HALF_OPEN / OPEN / TERMINATED). The proved machine is the Lean
+            # artifact this corresponds to — cited, not re-proved here.
             #
-            # Note: HALF_OPEN entry is NOT automatic. The four-state IPC model
-            # (TRUSTED / EVALUATING / ISOLATED / TERMINATED in
-            # ipc/bridge.CircuitState) reserves HALF_OPEN ("EVALUATING — recovery
-            # probe after cooldown") for an external operator API or future
-            # cooldown-gated probe. Today there is no cooldown timer here — the
-            # OPEN -> CLOSED edge is direct as soon as trust recovers. The
-            # HALF_OPEN -> CLOSED branch below is kept so that if an operator
-            # forces a pair into HALF_OPEN out-of-band, normal trust recovery
-            # still resolves it.
+            # Two recovery regimes, selected by config.recovery_cooldown_seconds:
+            #
+            #   cooldown is None (default) — direct recovery, unchanged behavior:
+            #       CLOSED -> OPEN          when trust drops below threshold
+            #       OPEN -> CLOSED          as soon as trust recovers
+            #       HALF_OPEN -> CLOSED     recovery safety net for a pair an
+            #                               operator forced into HALF_OPEN
+            #                               out-of-band (never entered automatically
+            #                               in this regime).
+            #
+            #   cooldown set (> 0) — cooldown-gated HALF_OPEN probe:
+            #       CLOSED -> OPEN          when trust drops below threshold
+            #                               (records opened_at)
+            #       OPEN -> HALF_OPEN       on the first evaluation once the cooldown
+            #                               has elapsed since opened_at (time-gated
+            #                               only; publishes EVALUATING). HALF_OPEN is
+            #                               an observable resting state.
+            #       HALF_OPEN -> CLOSED     probe success: trust recovered.
+            #       HALF_OPEN -> OPEN       probe failure: still below threshold
+            #                               (restarts the cooldown via opened_at).
+            #
+            # TERMINATED is sticky in both regimes: only an explicit reset() clears
+            # it, preserving the administrative kill-switch invariant.
             below = self._evaluator.is_below_threshold(state)
             old_cs = state.circuit_state
-            if below and old_cs == "CLOSED":
-                new_cs = "OPEN"
-            elif not below and old_cs in ("OPEN", "HALF_OPEN"):
-                new_cs = "CLOSED"
+            cooldown = self._config.recovery_cooldown_seconds
+
+            if cooldown is None:
+                # Direct-edge safety net — unchanged default behavior.
+                if below and old_cs == "CLOSED":
+                    new_cs = "OPEN"
+                elif not below and old_cs in ("OPEN", "HALF_OPEN"):
+                    new_cs = "CLOSED"
+                else:
+                    new_cs = old_cs
             else:
-                new_cs = old_cs
+                # Cooldown-gated recovery via HALF_OPEN probe.
+                if below and old_cs == "CLOSED":
+                    new_cs = "OPEN"
+                    state.opened_at = time.time()
+                elif old_cs == "OPEN":
+                    if state.opened_at is None:
+                        # Adopt a pair that entered OPEN before a cooldown was
+                        # configured (or was persisted before opened_at existed):
+                        # stamp a stable cooldown anchor now and hold OPEN. Using
+                        # last_updated here would be unreliable — evaluator.update()
+                        # bumps it every evaluation, so the cooldown could never
+                        # accrue.
+                        state.opened_at = time.time()
+                        new_cs = "OPEN"
+                    elif time.time() - state.opened_at >= cooldown:
+                        new_cs = "HALF_OPEN"  # probe admission (time-gated only)
+                    else:
+                        new_cs = "OPEN"  # cooldown not elapsed — hold OPEN
+                elif old_cs == "HALF_OPEN":
+                    if below:
+                        new_cs = "OPEN"  # probe failure — restart cooldown
+                        state.opened_at = time.time()
+                    else:
+                        new_cs = "CLOSED"  # probe success
+                else:
+                    new_cs = old_cs  # TERMINATED / unknown stays put
 
             if new_cs != old_cs:
                 state.circuit_state = new_cs
