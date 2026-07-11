@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Opt-in cooldown-gated `HALF_OPEN` recovery probe (FUL-195). New
+  `TrustConfig.recovery_cooldown_seconds` (default `None`): when set, recovery
+  from `OPEN` routes through an observable `HALF_OPEN` probe — the pair holds
+  `OPEN` until the cooldown elapses since it opened, then the next evaluation
+  admits a probe that resolves to `CLOSED` (recovered) or back to `OPEN` (still
+  failing), publishing `EVALUATING` on the `OPEN → HALF_OPEN` edge. Adds a
+  persistence-compatible `TrustState.opened_at` anchor. Default `None` preserves
+  the direct `OPEN → CLOSED` recovery edge with zero behavior change. This aligns
+  the deployed recovery path with the proved four-state machine (correspondence
+  with the Lean artifact, not a new proof).
 - `CITATION.cff` and `CODE_OF_CONDUCT.md` to align the repo with the four-repo
   public presentation standard.
 
