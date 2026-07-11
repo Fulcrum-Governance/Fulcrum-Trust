@@ -87,3 +87,19 @@ class TestApplyDecay:
         state = self._state_with_known_update(0.0)
         result = apply_decay(state, 86400.0)
         assert result is state
+
+    def test_decay_cannot_lift_alpha_above_cap(self) -> None:
+        """Decay contracts toward 1.0, so it never violates an alpha_max >= 1 (T1a).
+
+        The cap is enforced on the update path; this pins the invariant that
+        the decay path cannot re-break it for any cap >= 1.0.
+        """
+        cap = 5.0
+        state = TrustState(
+            pair_id="test", agent_a="a", agent_b="b", alpha=cap, beta_val=2.0
+        )
+        for elapsed in (0.0, 3600.0, 86400.0, 86400.0 * 50):
+            state.alpha = cap
+            state.last_updated = time.time() - elapsed
+            apply_decay(state, 86400.0)
+            assert state.alpha <= cap

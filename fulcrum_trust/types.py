@@ -67,6 +67,13 @@ class TrustConfig:
         failure_weight: Beta increment per FAILURE outcome. Default 1.0.
         partial_alpha_weight: Alpha increment per PARTIAL outcome. Default 0.5.
         partial_beta_weight: Beta increment per PARTIAL outcome. Default 0.5.
+        alpha_max: Optional hard cap on alpha. When set, TrustEvaluator.update()
+            clamps alpha to this value after each increment, bounding the
+            worst-case number of failures before the circuit opens to a
+            constant (see README "Bounded detection latency (alpha_max)").
+            Requires alpha_max >= alpha_prior > 0. alpha_max == alpha_prior is
+            a legal boundary that freezes success accrual entirely — degenerate
+            in practice. Default None (unbounded, prior behavior).
     """
 
     threshold: float = 0.3
@@ -77,6 +84,7 @@ class TrustConfig:
     failure_weight: float = 1.0
     partial_alpha_weight: float = 0.5
     partial_beta_weight: float = 0.5
+    alpha_max: float | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 < self.threshold < 1.0:
@@ -84,4 +92,9 @@ class TrustConfig:
         if self.half_life_seconds <= 0:
             raise ValueError(
                 f"half_life_seconds must be positive, got {self.half_life_seconds}"
+            )
+        if self.alpha_max is not None and not (self.alpha_max >= self.alpha_prior > 0):
+            raise ValueError(
+                f"alpha_max requires alpha_max >= alpha_prior > 0, "
+                f"got alpha_max={self.alpha_max}, alpha_prior={self.alpha_prior}"
             )

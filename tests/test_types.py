@@ -88,6 +88,37 @@ class TestTrustConfig:
         cfg = TrustConfig(threshold=0.5)
         assert cfg.threshold == pytest.approx(0.5)
 
+    def test_default_alpha_max_is_none(self) -> None:
+        """alpha_max defaults to None — unbounded alpha, prior behavior (T1a)."""
+        cfg = TrustConfig()
+        assert cfg.alpha_max is None
+
+    def test_alpha_max_stored_when_valid(self) -> None:
+        cfg = TrustConfig(alpha_max=20.0)
+        assert cfg.alpha_max == pytest.approx(20.0)
+
+    def test_alpha_max_below_prior_raises(self) -> None:
+        """alpha_max < alpha_prior is rejected (T1a validation)."""
+        with pytest.raises(ValueError, match="alpha_max"):
+            TrustConfig(alpha_max=0.5)  # default alpha_prior=1.0
+
+    def test_alpha_max_equal_prior_is_legal_boundary(self) -> None:
+        """alpha_max == alpha_prior freezes success accrual (legal, degenerate)."""
+        cfg = TrustConfig(alpha_prior=2.0, alpha_max=2.0)
+        assert cfg.alpha_max == pytest.approx(2.0)
+
+    def test_alpha_max_with_nonpositive_prior_raises(self) -> None:
+        """When alpha_max is set, alpha_prior must be strictly positive."""
+        with pytest.raises(ValueError, match="alpha_max"):
+            TrustConfig(alpha_prior=0.0, alpha_max=5.0)
+        with pytest.raises(ValueError, match="alpha_max"):
+            TrustConfig(alpha_prior=-1.0, alpha_max=5.0)
+
+    def test_none_alpha_max_skips_prior_validation(self) -> None:
+        """Regression: alpha_prior=0 stays constructible while alpha_max is unset."""
+        cfg = TrustConfig(alpha_prior=0.0)
+        assert cfg.alpha_max is None
+
 
 class TestTrustCircuitOpen:
     def test_is_exception_subclass(self) -> None:
