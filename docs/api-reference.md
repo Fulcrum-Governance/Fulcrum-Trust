@@ -155,8 +155,9 @@ Configuration dataclass passed to `TrustManager`. All fields have defaults.
 | `failure_weight` | `1.0` | Beta increment per `FAILURE` outcome |
 | `partial_alpha_weight` | `0.5` | Alpha increment per `PARTIAL` outcome |
 | `partial_beta_weight` | `0.5` | Beta increment per `PARTIAL` outcome |
+| `alpha_max` | `None` | Optional hard cap on alpha, clamped after each update. Bounds worst-case failures-to-detection to `ceil(alpha_max*(q-p)/p)` for threshold `p/q` — see README ["Bounded detection latency (`alpha_max`)"](../README.md#bounded-detection-latency-alpha_max) |
 
-**Validation:** `threshold` must be in `(0, 1)`. `half_life_seconds` must be positive.
+**Validation:** `threshold` must be in `(0, 1)`. `half_life_seconds` must be positive. `alpha_max`, when set, must satisfy `alpha_max >= alpha_prior > 0` (`alpha_max == alpha_prior` is a legal boundary that freezes success accrual — degenerate in practice).
 
 **Example:**
 

@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `TrustConfig.alpha_max` — optional hard cap on alpha (default `None`, zero
+  behavior change). When set, `TrustEvaluator.update()` clamps alpha after
+  each increment, bounding worst-case failures-to-detection to
+  `ceil(alpha_max*(q-p)/p)` for threshold `p/q` (θ=0.3 ⇒ `ceil(alpha_max*7/3)`).
+  Engine change is Implemented; the bound is Proved only for the discrete
+  capped Lean model (D4 Theorem 3.9, DOI 10.5281/zenodo.19900714) — see README
+  "Bounded detection latency (`alpha_max`)" for the mandatory correspondence
+  note.
 - `CITATION.cff` and `CODE_OF_CONDUCT.md` to align the repo with the four-repo
   public presentation standard.
 
