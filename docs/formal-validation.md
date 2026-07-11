@@ -22,6 +22,25 @@ repository. The authoritative proof-to-implementation mapping lives at:
 Without that cross-reference, public readers cannot verify the
 "formally validated" claim.
 
+## Bounded detection latency (`alpha_max`) — published anchor
+
+The optional `TrustConfig.alpha_max` cap (added July 2026) is the engine-side
+realization of the *hardened model variant* published in D4 §3.7, Theorem 3.9
+(`capped_prior_strict_responsiveness`, with helper
+`capped_success_update_bounded`, mapped to `KernelVariants.lean` in the
+released Zenodo supplement) —
+[DOI 10.5281/zenodo.19900714](https://doi.org/10.5281/zenodo.19900714).
+The paper frames that theorem as "a hardened model variant, not a claim about
+the current implementation"; this knob closes the stated gap on the
+implementation side.
+
+Claims scope: the knob is **Implemented**; the bound `q·(α_max+1)` is
+**Proved** for the discrete capped Lean model only (Laplace `(α+1)/(α+β+2)`
+over `Nat`). The deployed raw `α/(α+β)` float estimator has a different,
+tighter minimal constant (`β > α(q−p)/p`). Never present the Lean constant as
+the operational detection latency — see the correspondence note in the
+[README](../README.md#bounded-detection-latency-alpha_max).
+
 ---
 
 *Provenance: this note was lifted from the former `.planning/PROJECT.md`

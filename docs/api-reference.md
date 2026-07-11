@@ -157,8 +157,9 @@ Configuration dataclass passed to `TrustManager`. All fields have defaults.
 | `partial_alpha_weight` | `0.5` | Alpha increment per `PARTIAL` outcome |
 | `partial_beta_weight` | `0.5` | Beta increment per `PARTIAL` outcome |
 | `recovery_cooldown_seconds` | `None` | If set (`> 0`), recovery from `OPEN` routes through a `HALF_OPEN` probe after this many seconds instead of jumping straight to `CLOSED`. `None` keeps the direct `OPEN → CLOSED` recovery edge. |
+| `alpha_max` | `None` | Optional hard cap on alpha, clamped after each update. Bounds worst-case failures-to-detection to `ceil(alpha_max*(q-p)/p)` for threshold `p/q` — see README ["Bounded detection latency (`alpha_max`)"](../README.md#bounded-detection-latency-alpha_max) |
 
-**Validation:** `threshold` must be in `(0, 1)`. `half_life_seconds` must be positive. `recovery_cooldown_seconds`, when set, must be positive.
+**Validation:** `threshold` must be in `(0, 1)`. `half_life_seconds` must be positive. `recovery_cooldown_seconds`, when set, must be positive. `alpha_max`, when set, must satisfy `alpha_max >= alpha_prior > 0` (`alpha_max == alpha_prior` is a legal boundary that freezes success accrual — degenerate in practice).
 
 **Example:**
 

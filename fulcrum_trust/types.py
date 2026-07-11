@@ -76,6 +76,16 @@ class TrustConfig:
             the next evaluation admits a HALF_OPEN probe whose outcome resolves to
             CLOSED (recovered) or OPEN (still failing). Default ``None`` preserves
             the direct OPEN -> CLOSED recovery edge (zero behavior change).
+        alpha_max: Optional hard cap on alpha. When set, TrustEvaluator.update()
+            clamps alpha to this value after each increment, bounding the
+            worst-case number of failures before the circuit opens to a
+            constant (see README "Bounded detection latency (alpha_max)").
+            Requires alpha_max >= alpha_prior > 0. alpha_max == alpha_prior is
+            a legal boundary that freezes success accrual entirely — degenerate
+            in practice. Once the circuit opens with beta deep past the cap,
+            successes alone cannot re-cross the threshold (the score is
+            pinned); recovery flows through decay toward the prior or an
+            explicit reset. Default None (unbounded, prior behavior).
     """
 
     threshold: float = 0.3
@@ -87,6 +97,7 @@ class TrustConfig:
     partial_alpha_weight: float = 0.5
     partial_beta_weight: float = 0.5
     recovery_cooldown_seconds: float | None = None
+    alpha_max: float | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 < self.threshold < 1.0:
@@ -102,4 +113,9 @@ class TrustConfig:
             raise ValueError(
                 "recovery_cooldown_seconds must be positive when set, "
                 f"got {self.recovery_cooldown_seconds}"
+            )
+        if self.alpha_max is not None and not (self.alpha_max >= self.alpha_prior > 0):
+            raise ValueError(
+                f"alpha_max requires alpha_max >= alpha_prior > 0, "
+                f"got alpha_max={self.alpha_max}, alpha_prior={self.alpha_prior}"
             )

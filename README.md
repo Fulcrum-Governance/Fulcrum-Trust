@@ -13,6 +13,55 @@ Adaptive trust governance for the agent control plane. Bayesian Beta(α,β) trus
 
 The math: every interaction updates a `Beta(α, β)` distribution. Trust score = `α / (α + β)`. Starting at `(1.0, 1.0)` gives an uninformative prior of 0.5. Scores decay exponentially toward 0.5 over time (stale relationships revert to uncertainty).
 
+### Bounded detection latency (`alpha_max`)
+
+By default `α` grows without bound, so a pair with a long clean history buys a
+proportionally long runway of tolerated failures before the circuit opens.
+Setting `TrustConfig(alpha_max=K)` clamps `α` at `K` after every update,
+converting that runway into a constant: with threshold `θ = p/q`, the circuit
+opens within `ceil(α_max·(q−p)/p)` consecutive failures regardless of prior
+history (raw model; θ = 0.3 ⇒ `ceil(α_max·7/3)`, e.g. `α_max=20` ⇒ ≤ 47).
+
+```python
+from fulcrum_trust import TrustManager, TrustConfig
+
+tm = TrustManager(config=TrustConfig(alpha_max=20.0))  # detection ≤ 47 failures
+```
+
+The knob is a tradeoff surface: smaller `α_max` → tighter detection bound but
+coarser trust resolution. Pick per deployment — there is no hardcoded value,
+and `alpha_max=None` (the default) preserves the original unbounded behavior
+exactly. Validation requires `alpha_max >= alpha_prior > 0`;
+`alpha_max == alpha_prior` is a legal boundary that freezes success accrual
+entirely — degenerate in practice.
+
+**Recovery under the cap.** Bounded detection has a flip side: once the
+circuit opens with `β` well past the cap (`β > α_max·(q−p)/p`), successes
+alone can never re-cross `θ` — the score is pinned at `α_max/(α_max+β)`
+because `α` cannot grow. Recovery flows through time decay (both parameters
+contract toward the uninformative prior, restoring recoverability within a
+fraction of a half-life), an explicit `reset()`, or operator action. This
+asymmetry is intrinsic to capping success evidence; pair the cap with
+`recovery_cooldown_seconds` for a governed re-entry probe once decay lifts
+the score back above threshold.
+
+**Claims scope.** The engine knob is **Implemented** (tested in
+`tests/test_evaluator.py::TestAlphaMaxCap`). The worst-case bound itself is
+**Proved** only for the *discrete capped model* in Lean — D4 Theorem 3.9
+(`capped_prior_strict_responsiveness`), published in ["A Bounded,
+Machine-Checkable Governance Kernel for Trust-Gated Agent Execution"](https://doi.org/10.5281/zenodo.19900714)
+(DOI 10.5281/zenodo.19900714), which proves threshold crossing within
+`q·(α_max+1)` for the Laplace `(α+1)/(α+β+2)` estimator over `Nat`. The
+deployed Python estimator is raw `α/(α+β)` over `float`; the two models agree
+at the prior and diverge with counts, so their constants differ.
+
+> **CORRESPONDENCE (carried verbatim from the sprint spec — mandatory).**
+> The Lean witness `q·(α+1)` is *sufficient, not minimal*. The deployed Python
+> raw estimator has a tighter minimal bound (`β > α(q−p)/p`). Document both
+> constants and which model each belongs to. For θ=0.3 and α_max=20: Lean
+> sufficient bound `q(α_max+1)=210`; raw-model minimal `≈47`. Do not present
+> the Lean constant as the operational detection latency without this note.
+
 ## Quick Start
 
 ```python

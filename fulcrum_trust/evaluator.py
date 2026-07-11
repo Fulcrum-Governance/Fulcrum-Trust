@@ -35,7 +35,9 @@ class TrustEvaluator:
         """Apply Bayesian update: increment alpha (success) or beta_val (failure).
 
         PARTIAL adds half-weight to both, representing mixed evidence.
-        Mutates state in place and returns it.
+        When config.alpha_max is set, alpha is clamped to it after the
+        increment; a state carrying alpha above a newly configured cap is
+        clamped down on its first update. Mutates state in place and returns it.
         """
         cfg = self._config
         if outcome == TrustOutcome.SUCCESS:
@@ -45,6 +47,8 @@ class TrustEvaluator:
         elif outcome == TrustOutcome.PARTIAL:
             state.alpha += cfg.partial_alpha_weight
             state.beta_val += cfg.partial_beta_weight
+        if cfg.alpha_max is not None:
+            state.alpha = min(state.alpha, cfg.alpha_max)
         state.interaction_count += 1
         state.last_updated = time.time()
         return state
