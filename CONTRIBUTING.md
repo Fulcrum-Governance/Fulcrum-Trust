@@ -16,7 +16,7 @@ pip install -e ".[dev]"
 ## Running Tests
 
 ```bash
-pytest                  # all 239 tests with coverage (must be >=95%)
+pytest                  # all 240 tests with coverage (must be >=95%)
 pytest --tb=short       # shorter tracebacks
 pytest tests/test_manager.py -v  # single module
 ```

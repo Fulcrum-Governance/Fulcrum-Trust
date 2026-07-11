@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import math
 import random
+import time
 
 import pytest
 
+from fulcrum_trust.decay import apply_decay
 from fulcrum_trust.evaluator import TrustEvaluator, make_pair_id
 from fulcrum_trust.types import TrustConfig, TrustOutcome
 
@@ -180,3 +182,22 @@ class TestAlphaMaxCap:
         for _ in range(50):
             ev.update(state, TrustOutcome.SUCCESS)
         assert state.alpha == pytest.approx(51.0)
+
+    def test_capped_pair_recovers_via_decay_not_successes(self) -> None:
+        """Interaction pin: with alpha at the cap and beta deep past it,
+        successes alone can never re-cross theta — the score is pinned at
+        cap/(cap+beta). Recovery flows through decay toward the prior (or an
+        explicit reset), which restores recoverability.
+        """
+        cap = 20.0
+        ev = TrustEvaluator(TrustConfig(alpha_max=cap))
+        state = ev.new_state("a", "b")
+        state.alpha, state.beta_val = cap, 47.0  # post-detection worst case
+        for _ in range(50):
+            ev.update(state, TrustOutcome.SUCCESS)
+        assert state.alpha == pytest.approx(cap)
+        assert ev.is_below_threshold(state)  # pinned below theta despite successes
+        state.last_updated = time.time() - 86400.0  # one default half-life stale
+        apply_decay(state, 86400.0)
+        ev.update(state, TrustOutcome.SUCCESS)
+        assert not ev.is_below_threshold(state)  # decay restores recoverability

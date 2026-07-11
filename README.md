@@ -35,6 +35,16 @@ exactly. Validation requires `alpha_max >= alpha_prior > 0`;
 `alpha_max == alpha_prior` is a legal boundary that freezes success accrual
 entirely — degenerate in practice.
 
+**Recovery under the cap.** Bounded detection has a flip side: once the
+circuit opens with `β` well past the cap (`β > α_max·(q−p)/p`), successes
+alone can never re-cross `θ` — the score is pinned at `α_max/(α_max+β)`
+because `α` cannot grow. Recovery flows through time decay (both parameters
+contract toward the uninformative prior, restoring recoverability within a
+fraction of a half-life), an explicit `reset()`, or operator action. This
+asymmetry is intrinsic to capping success evidence; pair the cap with
+`recovery_cooldown_seconds` for a governed re-entry probe once decay lifts
+the score back above threshold.
+
 **Claims scope.** The engine knob is **Implemented** (tested in
 `tests/test_evaluator.py::TestAlphaMaxCap`). The worst-case bound itself is
 **Proved** only for the *discrete capped model* in Lean — D4 Theorem 3.9

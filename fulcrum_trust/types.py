@@ -82,7 +82,10 @@ class TrustConfig:
             constant (see README "Bounded detection latency (alpha_max)").
             Requires alpha_max >= alpha_prior > 0. alpha_max == alpha_prior is
             a legal boundary that freezes success accrual entirely — degenerate
-            in practice. Default None (unbounded, prior behavior).
+            in practice. Once the circuit opens with beta deep past the cap,
+            successes alone cannot re-cross the threshold (the score is
+            pinned); recovery flows through decay toward the prior or an
+            explicit reset. Default None (unbounded, prior behavior).
     """
 
     threshold: float = 0.3
