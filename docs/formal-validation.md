@@ -41,6 +41,22 @@ tighter minimal constant (`β > α(q−p)/p`). Never present the Lean constant a
 the operational detection latency — see the correspondence note in the
 [README](../README.md#bounded-detection-latency-alpha_max).
 
+## Two-regime recovery — four-state machine correspondence
+
+The cooldown-gated `HALF_OPEN` recovery probe (added July 2026;
+`TrustConfig.recovery_cooldown_seconds`) routes recovery through the
+`CLOSED → OPEN → HALF_OPEN → CLOSED` cycle instead of the direct `OPEN → CLOSED`
+edge. That deployed four-state machine *corresponds to* the `ValidTransition`
+transition relation formalized in
+[`Fulcrum-Proofs`](https://github.com/Fulcrum-Governance/Fulcrum-Proofs) at the
+`v0.2.0` tag, whose regime-conditioned docstring distinguishes the direct-edge
+default from the cooldown-gated probe path.
+
+Claims scope: the recovery machine is **Implemented** and **Tested**; the
+mapping to `ValidTransition` is a **narrative cross-walk, not a new proof** — the
+cooldown duration is an operational parameter, not a Lean-verified quantity. Cite
+the `v0.2.0` tag, not `main`.
+
 ---
 
 *Provenance: this note was lifted from the former `.planning/PROJECT.md`
