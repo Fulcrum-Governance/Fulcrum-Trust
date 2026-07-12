@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] - 2026-07-11
 
 ### Added
 
@@ -29,17 +29,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   note.
 - `CITATION.cff` and `CODE_OF_CONDUCT.md` to align the repo with the four-repo
   public presentation standard.
+- 240 tests, 98.68% coverage.
 
 ### Documentation
 
 - README cross-links for the Fulcrum architecture and public-surface project
   docs.
-- CONTRIBUTING test-count wording updated to the current `186`-test baseline.
+- CONTRIBUTING test-count wording updated to the current `240`-test baseline.
 - Clarified the stability of the RLM subpackage (`fulcrum_trust/rlm/`): it is a
   public but unstable Phase 5 prototype. The "unstable" contract is now stated
   consistently across the README, API reference, the `fulcrum_trust.rlm` module
   docstring, and a `__stability__ = "prototype"` marker (PUNCH_LIST.md PL-3
   resolved — kept explicitly unstable; no scoring change).
+
+### Known limitations
+
+- `TrustConfig` does not yet reject non-positive outcome weights/priors or
+  non-finite (`NaN`/`inf`) knob values; such inputs yield undefined circuit
+  behavior. Validation hardening is tracked internally.
+
+## [0.2.1] - 2026-06-29
+
+### Packaging
+
+- Republished with the full Apache-2.0 `LICENSE` text bundled in the sdist and
+  wheel (FUL-130). No code or API changes.
 
 ## [0.2.0] - 2026-04-09
 
@@ -88,5 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Three runnable demos: gratitude loop, drift detection, and recovery scenarios
 - 97 tests, 96.83% coverage, mypy strict clean, zero runtime dependencies
 
+[0.3.0]: https://github.com/Fulcrum-Governance/fulcrum-trust/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/Fulcrum-Governance/fulcrum-trust/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Fulcrum-Governance/fulcrum-trust/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Fulcrum-Governance/fulcrum-trust/releases/tag/v0.1.0

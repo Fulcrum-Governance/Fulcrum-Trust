@@ -1,6 +1,6 @@
 # fulcrum-trust — Agent Context
 
-**Last updated:** 2026-05-27
+**Last updated:** 2026-07-11
 
 ---
 
@@ -27,7 +27,7 @@ This is one of four repositories under the `Fulcrum-Governance` GitHub org.
 
 ```bash
 pip install -e ".[dev]"     # Install with dev dependencies
-pytest                       # Run all tests (186 tests, 95.65% coverage at v0.2.0 — see CHANGELOG)
+pytest                       # Run all tests (240 tests, 98.68% coverage at v0.3.0 — see CHANGELOG)
 pytest --cov=fulcrum_trust   # With coverage report
 ruff check .                 # Lint
 ruff format .                # Format
@@ -52,7 +52,7 @@ fulcrum_trust/
 
 ## Publishing
 
-- Package: `fulcrum-trust` on PyPI (current: v0.2.0)
+- Package: `fulcrum-trust` on PyPI (current: v0.3.0)
 - Build: `python -m build`
 - Upload: `twine upload dist/*` (token: `PYPI_TRUST_TOKEN` in Doppler `fulcrum/prd`)
 - Tag: `git tag vX.Y.Z && git push origin vX.Y.Z`

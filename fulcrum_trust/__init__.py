@@ -13,7 +13,7 @@ from fulcrum_trust.stores.fulcrum import FulcrumStore
 from fulcrum_trust.stores.memory import MemoryStore
 from fulcrum_trust.types import TrustCircuitOpen, TrustConfig, TrustOutcome, TrustState
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 __all__ = [
     "CircuitState",
