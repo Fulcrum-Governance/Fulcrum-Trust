@@ -62,6 +62,56 @@ at the prior and diverge with counts, so their constants differ.
 > sufficient bound `q(α_max+1)=210`; raw-model minimal `≈47`. Do not present
 > the Lean constant as the operational detection latency without this note.
 
+## Circuit state machine & recovery
+
+Every agent pair carries a circuit in one of four states. `evaluate()` drives
+transitions from the trust score; `terminate()` is the out-of-band kill switch.
+
+| State | Meaning | IPC (`CircuitState`) |
+|-------|---------|----------------------|
+| `CLOSED` | trust ≥ threshold — traffic flows | `TRUSTED` (0) |
+| `OPEN` | trust < threshold — pair is isolated | `ISOLATED` (2) |
+| `HALF_OPEN` | recovery probe admitted — one evaluation decides | `EVALUATING` (1) |
+| `TERMINATED` | administratively killed — sticky, bypasses trust math | `TERMINATED` (3) |
+
+Recovery from `OPEN` has **two regimes**, selected by
+`TrustConfig.recovery_cooldown_seconds`.
+
+**Default (`recovery_cooldown_seconds=None`) — direct edge.** The circuit closes
+the moment an evaluation brings trust back to threshold `θ`; behavior is
+unchanged from earlier releases.
+
+```
+CLOSED --(trust < θ)--> OPEN --(trust ≥ θ)--> CLOSED
+```
+
+**Cooldown-gated (`recovery_cooldown_seconds` set) — observable probe.** The pair
+holds `OPEN` until the cooldown elapses since it opened, then the next evaluation
+is admitted as a `HALF_OPEN` probe that resolves in a single step. Admission is
+**time-gated only** — there is no direct `OPEN → CLOSED` edge in this regime.
+
+```
+CLOSED    --(trust < θ)--------> OPEN         # circuit opens (stamps opened_at)
+OPEN      --(cooldown elapsed)-> HALF_OPEN    # probe admitted (time-gated)
+HALF_OPEN --(trust ≥ θ)--------> CLOSED       # probe succeeds → recovered
+HALF_OPEN --(trust < θ)--------> OPEN         # probe fails → cooldown restarts
+```
+
+The `OPEN → HALF_OPEN` edge publishes `EVALUATING` over the IPC bridge. Under a
+capped prior (`alpha_max`), a pair whose `β` is deep past the cap cannot re-cross
+`θ` on successes alone (see *Recovery under the cap* above) — the cooldown probe
+becomes recoverable only once time decay lifts the score back over `θ`.
+`TERMINATED` is reachable from any state via `terminate()` and never recovers
+without an explicit `reset()`.
+
+**Claims scope.** The state machine is **Implemented** and **Tested**
+(`tests/test_manager_recovery_cooldown.py`,
+`tests/test_manager_circuit_persistence.py`). Its four-state transition relation
+*corresponds to* the `ValidTransition` predicate formalized in
+[`Fulcrum-Proofs`](https://github.com/Fulcrum-Governance/Fulcrum-Proofs) at the
+`v0.2.0` tag (regime-conditioned docstring) — a **correspondence with the Lean
+artifact, not a new proof**.
+
 ## Quick Start
 
 ```python
