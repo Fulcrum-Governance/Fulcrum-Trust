@@ -1,5 +1,12 @@
 # ADR-010: Adopt Selected Engineering Patterns from Ecosystem Intelligence Audit
 
+> **Canonical home (pointer added 2026-07-29, FUL-353/X14 — text below unchanged):** this
+> decision's canonical record is fulcrum-io
+> `.claude/decisions/ADR-007-engineering-intel-adoption.md` (this file was its original
+> source; the legacy fulcrum-io copy is archived per `.claude/decisions/legacy-aliases.json`).
+> Series pointer: this repo's root `DECISIONS.md`. This local file stays frozen as source
+> provenance — do not grow a local ADR series here.
+
 **Status:** Accepted
 **Date:** March 5, 2026
 **Decision Makers:** Tony Diefenbach (Founder)
