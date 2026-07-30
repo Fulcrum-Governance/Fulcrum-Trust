@@ -64,10 +64,11 @@ Fulcrum-Governance/Fulcrum-Trust
 
 Capital **F**, capital **T**. Enter it exactly that way.
 
-Most GitHub URLs in this repo — `pyproject.toml`, `README.md` — say lowercase
-`fulcrum-trust`. Those are fine: GitHub redirects, so they resolve in a browser and in
-`git clone`. They are left as-is deliberately. But a publisher registered as
-`fulcrum-trust` will **never** match a claim, and the failure message
+`[project.urls]` in `pyproject.toml` carries this canonical casing as of FUL-369. The
+prose GitHub URLs elsewhere — `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`,
+`docs/blog-trust-circuit-breaker.md` — still say lowercase `fulcrum-trust`, and that is
+fine: GitHub redirects, so they resolve in a browser and in `git clone`. But a publisher
+registered as `fulcrum-trust` will **never** match a claim, and the failure message
 (`invalid-publisher: valid token, but no corresponding publisher`) does not tell you that
 casing is the reason.
 

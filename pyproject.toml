@@ -43,9 +43,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Fulcrum-Governance/fulcrum-trust"
-Repository = "https://github.com/Fulcrum-Governance/fulcrum-trust"
-Issues = "https://github.com/Fulcrum-Governance/fulcrum-trust/issues"
+Homepage = "https://github.com/Fulcrum-Governance/Fulcrum-Trust"
+Repository = "https://github.com/Fulcrum-Governance/Fulcrum-Trust"
+Issues = "https://github.com/Fulcrum-Governance/Fulcrum-Trust/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["fulcrum_trust"]
