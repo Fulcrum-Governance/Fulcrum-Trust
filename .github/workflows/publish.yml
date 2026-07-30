@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,6 +18,7 @@ jobs:
           python-version: '3.11'
 
       - name: Validate tag matches pyproject version
+        if: github.event_name == 'push'
         run: |
           python - <<'PY'
           import os
@@ -70,13 +72,75 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Snapshot existing TestPyPI files
+        run: |
+          curl -sf https://test.pypi.org/pypi/fulcrum-trust/json -o /tmp/testpypi.json \
+            || echo '{}' > /tmp/testpypi.json
+          python - <<'PY'
+          import json
+          import pathlib
+
+          data = json.loads(pathlib.Path("/tmp/testpypi.json").read_text() or "{}")
+          existing = sorted(
+              f["filename"]
+              for files in data.get("releases", {}).values()
+              for f in files
+          )
+          pathlib.Path("/tmp/existing-before.json").write_text(json.dumps(existing))
+          print(f"TestPyPI currently holds {len(existing)} file(s)")
+          PY
+
+      # skip-existing keeps the verification dispatch repeatable: re-running the same
+      # version must not red on duplicate-file, because that failure is visually
+      # indistinguishable from a broken publisher registration. It cannot mask the thing
+      # under test — OIDC auth resolves before upload, so invalid-publisher still fails
+      # red. TestPyPI only; the prod job keeps strict duplicate semantics.
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
+      - name: Report upload result
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          before = set(json.loads(pathlib.Path("/tmp/existing-before.json").read_text()))
+          built = sorted(p.name for p in pathlib.Path("dist").iterdir() if p.is_file())
+          skipped = [f for f in built if f in before]
+          uploaded = [f for f in built if f not in before]
+
+          lines = [
+              "## TestPyPI publish result",
+              "",
+              f"- uploaded: **{len(uploaded)}**",
+              f"- skipped as already-existing: **{len(skipped)}**",
+          ]
+          if uploaded:
+              lines += ["", "Uploaded:"] + [f"- `{f}`" for f in uploaded]
+          if skipped:
+              lines += ["", "Skipped as already-existing:"] + [f"- `{f}`" for f in skipped]
+          if not uploaded:
+              lines += [
+                  "",
+                  "> **Green, but nothing was uploaded** — every built file already existed "
+                  "on TestPyPI. Trusted publishing still authenticated: OIDC resolves before "
+                  "upload, so `invalid-publisher` would have failed this job red regardless. "
+                  "The registration is valid.",
+              ]
+
+          out = "\n".join(lines)
+          print(out)
+          pathlib.Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(out + "\n")
+          PY
 
   publish-pypi:
     name: Publish to PyPI
     needs: publish-testpypi
+    # Tag pushes only — a manual verification dispatch can never reach prod PyPI.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
       name: pypi
