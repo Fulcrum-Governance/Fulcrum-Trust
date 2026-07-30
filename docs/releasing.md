@@ -72,6 +72,12 @@ registered as `fulcrum-trust` will **never** match a claim, and the failure mess
 (`invalid-publisher: valid token, but no corresponding publisher`) does not tell you that
 casing is the reason.
 
+One deliberate exception: `environment.url` in `publish.yml`
+(`https://test.pypi.org/p/fulcrum-trust`, `https://pypi.org/p/fulcrum-trust`) points at
+**PyPI project pages**, and PyPI project names normalize to lowercase — those URLs are
+correct as-is and must **not** be "fixed" to canonical repo casing. Only publisher
+registrations and GitHub repository references are case-sensitive.
+
 ### Check for an existing entry first
 
 On each index's Publishing page, look at what is already registered before adding
