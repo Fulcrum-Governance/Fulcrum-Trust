@@ -95,7 +95,7 @@ jobs:
       # indistinguishable from a broken publisher registration. It cannot mask the thing
       # under test — OIDC auth resolves before upload, so invalid-publisher still fails
       # red. TestPyPI only; the prod job keeps strict duplicate semantics.
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           repository-url: https://test.pypi.org/legacy/
           skip-existing: true
@@ -153,4 +153,4 @@ jobs:
           name: dist
           path: dist/
 
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
