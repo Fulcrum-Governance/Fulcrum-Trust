@@ -38,7 +38,7 @@ dev = [
     "pytest-cov>=4.0",
     "fakeredis>=2.23",
     "mypy>=1.0",
-    "ruff==0.15.18",
+    "ruff==0.16.3",
     "langgraph>=0.2.0",
 ]
 
@@ -116,6 +116,7 @@ ignore_errors = true
 [tool.ruff]
 target-version = "py39"
 line-length = 88
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
