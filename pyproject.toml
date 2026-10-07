@@ -50,6 +50,25 @@ Issues = "https://github.com/Fulcrum-Governance/Fulcrum-Trust/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["fulcrum_trust"]
 
+# FUL-210: pin the sdist payload — without an explicit target the sdist
+# shipped the entire repo tree (docs/, examples/, CI configs, ...).
+[tool.hatch.build.targets.sdist]
+# Anchored ("/"-prefixed) so they cannot match same-named files deeper in
+# the tree. Note: hatchling always bundles .gitignore into sdists
+# (force-included VCS exclusion file); everything else is exactly the list
+# below plus the generated PKG-INFO.
+include = [
+    "/fulcrum_trust",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
+exclude = [
+    "**/__pycache__",
+    "*.py[co]",
+]
+
 # Pytest: run with coverage enabled; fail below 95%
 [tool.pytest.ini_options]
 addopts = [
