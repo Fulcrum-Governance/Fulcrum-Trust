@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-10-07
+
+### Fixed
+
+- `TrustConfig` validation hardening (FUL-209). `__post_init__` now rejects
+  configuration that previously slipped through to undefined circuit behavior:
+  - `NaN`/`inf`/`-inf` in any numeric field (`threshold`,
+    `half_life_seconds`, `alpha_prior`, `beta_prior`, the four outcome
+    weights, `recovery_cooldown_seconds`, `alpha_max`) raises `ValueError`
+    naming the field. Previously `NaN` passed every check (`NaN <= 0` is
+    `False`) and `inf` half-lives/cooldowns/caps were accepted.
+  - `alpha_prior` and `beta_prior` must now be strictly positive in all cases
+    (previously only enforced when `alpha_max` was set).
+  - All four outcome weights (`success_weight`, `failure_weight`,
+    `partial_alpha_weight`, `partial_beta_weight`) must be strictly positive;
+    zero or negative weights previously produced silently frozen or inverted
+    trust dynamics.
+  - Existing rules are unchanged: `threshold` in `(0, 1)`,
+    `half_life_seconds > 0`, `recovery_cooldown_seconds > 0` when set, and
+    `alpha_max >= alpha_prior` when set.
+
+### Packaging
+
+- The sdist no longer ships the entire repository tree (FUL-210). An explicit
+  `[tool.hatch.build.targets.sdist]` target now limits it to the package, the
+  conventional `tests/` suite, `README.md`, `LICENSE`, and `pyproject.toml`.
+  The wheel contents are unchanged.
+
 ## [0.3.0] - 2026-07-11
 
 ### Added
@@ -102,6 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Three runnable demos: gratitude loop, drift detection, and recovery scenarios
 - 97 tests, 96.83% coverage, mypy strict clean, zero runtime dependencies
 
+[0.3.1]: https://github.com/Fulcrum-Governance/fulcrum-trust/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Fulcrum-Governance/fulcrum-trust/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/Fulcrum-Governance/fulcrum-trust/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Fulcrum-Governance/fulcrum-trust/compare/v0.1.0...v0.2.0
