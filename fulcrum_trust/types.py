@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import time
 from dataclasses import dataclass, field
 from enum import Enum
@@ -86,6 +87,14 @@ class TrustConfig:
             successes alone cannot re-cross the threshold (the score is
             pinned); recovery flows through decay toward the prior or an
             explicit reset. Default None (unbounded, prior behavior).
+
+    Raises:
+        ValueError: If any numeric field is NaN or infinite, if ``threshold``
+            is outside the open interval ``(0, 1)``, if ``alpha_prior``,
+            ``beta_prior``, or any outcome weight is not strictly positive,
+            if ``half_life_seconds`` or a set ``recovery_cooldown_seconds``
+            is not strictly positive, or if a set ``alpha_max`` is less than
+            ``alpha_prior``.
     """
 
     threshold: float = 0.3
@@ -100,12 +109,43 @@ class TrustConfig:
     alpha_max: float | None = None
 
     def __post_init__(self) -> None:
+        # Every numeric knob must be finite: NaN and +/-inf silently defeat
+        # comparisons (NaN <= 0 is False, inf >= anything is True) and would
+        # otherwise reach the trust math as undefined circuit behavior.
+        for name, value in (
+            ("threshold", self.threshold),
+            ("half_life_seconds", self.half_life_seconds),
+            ("alpha_prior", self.alpha_prior),
+            ("beta_prior", self.beta_prior),
+            ("success_weight", self.success_weight),
+            ("failure_weight", self.failure_weight),
+            ("partial_alpha_weight", self.partial_alpha_weight),
+            ("partial_beta_weight", self.partial_beta_weight),
+            ("recovery_cooldown_seconds", self.recovery_cooldown_seconds),
+            ("alpha_max", self.alpha_max),
+        ):
+            if value is not None and not math.isfinite(value):
+                raise ValueError(f"{name} must be finite, got {value}")
+
         if not 0.0 < self.threshold < 1.0:
             raise ValueError(f"threshold must be in (0, 1), got {self.threshold}")
         if self.half_life_seconds <= 0:
             raise ValueError(
                 f"half_life_seconds must be positive, got {self.half_life_seconds}"
             )
+        # Beta priors and outcome weights feed the Beta(alpha, beta) updates
+        # directly; non-positive values produce undefined or frozen dynamics.
+        for name, value in (
+            ("alpha_prior", self.alpha_prior),
+            ("beta_prior", self.beta_prior),
+            ("success_weight", self.success_weight),
+            ("failure_weight", self.failure_weight),
+            ("partial_alpha_weight", self.partial_alpha_weight),
+            ("partial_beta_weight", self.partial_beta_weight),
+        ):
+            if value <= 0:
+                raise ValueError(f"{name} must be positive, got {value}")
+
         if (
             self.recovery_cooldown_seconds is not None
             and self.recovery_cooldown_seconds <= 0
@@ -114,8 +154,8 @@ class TrustConfig:
                 "recovery_cooldown_seconds must be positive when set, "
                 f"got {self.recovery_cooldown_seconds}"
             )
-        if self.alpha_max is not None and not (self.alpha_max >= self.alpha_prior > 0):
+        if self.alpha_max is not None and self.alpha_max < self.alpha_prior:
             raise ValueError(
-                f"alpha_max requires alpha_max >= alpha_prior > 0, "
+                f"alpha_max requires alpha_max >= alpha_prior, "
                 f"got alpha_max={self.alpha_max}, alpha_prior={self.alpha_prior}"
             )

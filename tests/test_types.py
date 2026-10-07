@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from fulcrum_trust.types import TrustCircuitOpen, TrustConfig, TrustOutcome, TrustState
@@ -127,16 +129,89 @@ class TestTrustConfig:
         assert cfg.alpha_max == pytest.approx(2.0)
 
     def test_alpha_max_with_nonpositive_prior_raises(self) -> None:
-        """When alpha_max is set, alpha_prior must be strictly positive."""
-        with pytest.raises(ValueError, match="alpha_max"):
+        """Non-positive alpha_prior is rejected even when alpha_max is set."""
+        with pytest.raises(ValueError, match="alpha_prior"):
             TrustConfig(alpha_prior=0.0, alpha_max=5.0)
-        with pytest.raises(ValueError, match="alpha_max"):
+        with pytest.raises(ValueError, match="alpha_prior"):
             TrustConfig(alpha_prior=-1.0, alpha_max=5.0)
 
-    def test_none_alpha_max_skips_prior_validation(self) -> None:
-        """Regression: alpha_prior=0 stays constructible while alpha_max is unset."""
-        cfg = TrustConfig(alpha_prior=0.0)
-        assert cfg.alpha_max is None
+    def test_nonpositive_alpha_prior_raises_without_alpha_max(self) -> None:
+        """alpha_prior=0 is rejected unconditionally (0.3.1 hardening)."""
+        with pytest.raises(ValueError, match="alpha_prior"):
+            TrustConfig(alpha_prior=0.0)
+
+    # --- 0.3.1 validation hardening (FUL-209) -------------------------------
+
+    _REQUIRED_NUMERIC_FIELDS = (
+        "threshold",
+        "half_life_seconds",
+        "alpha_prior",
+        "beta_prior",
+        "success_weight",
+        "failure_weight",
+        "partial_alpha_weight",
+        "partial_beta_weight",
+    )
+    _OPTIONAL_NUMERIC_FIELDS = ("recovery_cooldown_seconds", "alpha_max")
+    _POSITIVE_FIELDS = (
+        "alpha_prior",
+        "beta_prior",
+        "success_weight",
+        "failure_weight",
+        "partial_alpha_weight",
+        "partial_beta_weight",
+    )
+    _NONFINITE = (math.nan, math.inf, -math.inf)
+    _NONPOSITIVE = (0.0, -1.0, -0.5)
+
+    @pytest.mark.parametrize(
+        "field_name", _REQUIRED_NUMERIC_FIELDS + _OPTIONAL_NUMERIC_FIELDS
+    )
+    @pytest.mark.parametrize("value", _NONFINITE, ids=["nan", "inf", "-inf"])
+    def test_nonfinite_numeric_field_raises(
+        self, field_name: str, value: float
+    ) -> None:
+        """NaN/inf/-inf in any numeric field is rejected, naming the field."""
+        with pytest.raises(ValueError, match=f"{field_name} must be finite"):
+            TrustConfig(**{field_name: value})
+
+    @pytest.mark.parametrize("field_name", _POSITIVE_FIELDS)
+    @pytest.mark.parametrize("value", _NONPOSITIVE, ids=["0", "-1", "-0.5"])
+    def test_nonpositive_prior_or_weight_raises(
+        self, field_name: str, value: float
+    ) -> None:
+        """Priors and outcome weights must be strictly positive."""
+        with pytest.raises(ValueError, match=f"{field_name} must be positive"):
+            TrustConfig(**{field_name: value})
+
+    @pytest.mark.parametrize("field_name", _REQUIRED_NUMERIC_FIELDS)
+    def test_smallest_positive_values_accepted(self, field_name: str) -> None:
+        """Boundary: tiny-but-positive finite values remain constructible."""
+        cfg = TrustConfig(**{field_name: 1e-9})
+        assert getattr(cfg, field_name) == pytest.approx(1e-9)
+
+    def test_threshold_exactly_one_raises(self) -> None:
+        """Boundary: threshold=1.0 is outside the open interval (0, 1)."""
+        with pytest.raises(ValueError, match="threshold"):
+            TrustConfig(threshold=1.0)
+
+    def test_threshold_just_below_one_accepted(self) -> None:
+        cfg = TrustConfig(threshold=1.0 - 1e-9)
+        assert cfg.threshold == pytest.approx(1.0 - 1e-9)
+
+    def test_infinite_alpha_max_raises(self) -> None:
+        """alpha_max=inf is a non-finite knob, not an 'unbounded cap' alias."""
+        with pytest.raises(ValueError, match="alpha_max must be finite"):
+            TrustConfig(alpha_max=math.inf)
+
+    def test_error_message_names_rejected_field(self) -> None:
+        """Each field's ValueError names itself, not a sibling field."""
+        with pytest.raises(ValueError, match="beta_prior"):
+            TrustConfig(beta_prior=0.0)
+        with pytest.raises(ValueError, match="partial_beta_weight"):
+            TrustConfig(partial_beta_weight=-0.1)
+        with pytest.raises(ValueError, match="half_life_seconds"):
+            TrustConfig(half_life_seconds=math.nan)
 
 
 class TestTrustCircuitOpen:
